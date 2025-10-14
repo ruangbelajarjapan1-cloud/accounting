@@ -67,7 +67,7 @@
       <div class="grid cards">
         <div class="tile"><div>👥</div><div><div class="text-slate-300 text-sm">Total Siswa</div><div id="statStudents" class="text-2xl font-bold">0</div><div class="text-xs text-slate-400">dari bulan lalu</div></div></div>
         <div class="tile"><div>🧑‍🏫</div><div><div class="text-slate-300 text-sm">Total Guru</div><div id="statTeachers" class="text-2xl font-bold">0</div><div class="text-xs text-slate-400">dari bulan lalu</div></div></div>
-        <div class="tile"><div>📘</div><div><div class="text-slate-300 text-sm">Total Kelas</div><div id="statClasses" class="text-2xl font-bold">0</div><div class="text-xs text-slate-400">dari bulan lalu</div></div></div>
+      <div class="tile"><div>📘</div><div><div class="text-slate-300 text-sm">Total Kelas</div><div id="statClasses" class="text-2xl font-bold">0</div><div class="text-xs text-slate-400">dari bulan lalu</div></div></div>
         <div class="tile"><div>💴</div><div><div class="text-slate-300 text-sm">Pemasukan Bulan Ini</div><div id="statIncome" class="text-2xl font-bold">¥0</div><div class="text-xs text-emerald-400">0% dari bulan lalu</div></div></div>
       </div>
 
@@ -141,7 +141,11 @@
           <div style="grid-column:span 2"><label class="label">Siswa</label><select id="payStudent" class="field"></select></div>
           <div><label class="label">Kelas</label><select id="payClass" class="field"></select></div>
           <div><label class="label">Bulan</label><input id="payMonth" type="month" class="field"></div>
-          <div><label class="label">Jumlah (JPY)</label><input id="payAmount" type="number" class="field"></div>
+          <div>
+            <label class="label">Jumlah (JPY)</label>
+            <input id="payAmount" type="number" class="field">
+            <div id="payHint" class="text-xs" style="color:#a3e635;margin-top:4px;"></div>
+          </div>
           <div><label class="label">Paket (bulan)</label><input id="payPkg" type="number" value="1" min="1" class="field"></div>
           <div style="grid-column:1/-1;display:flex;gap:8px">
             <input id="payNote" class="field" placeholder="Catatan" style="flex:1">
@@ -238,30 +242,22 @@
   </div>
 
 <script>
-/* =================== CONFIG =================== */
-const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbza6sbX4ROUBM-crFRaXTGYFkWxZ7baW0ePC5pRIlqfBAjz9f1gOao48zQtRxQqnbKUTQ/exec"; // contoh: https://script.google.com/macros/s/AKfycbx.../exec
+const WEBAPP_URL = "PASTE_YOUR_EXEC_URL";
 
-/* ============== API JSONP (no CORS) ============== */
+/* JSONP fetch */
 function api(action, params={}){
   const cbName = 'rbmj_cb_' + Math.random().toString(36).slice(2);
   return new Promise((resolve, reject)=>{
     const timer = setTimeout(()=>{ cleanup(); reject(new Error('Timeout JSONP')); }, 15000);
-    function cleanup(){
-      clearTimeout(timer);
-      try{ delete window[cbName]; }catch(e){}
-      if (script && script.parentNode) script.parentNode.removeChild(script);
-    }
+    function cleanup(){ clearTimeout(timer); try{ delete window[cbName]; }catch(e){} if (script && script.parentNode) script.parentNode.removeChild(script); }
     window[cbName] = (payload)=>{ cleanup(); if(!payload.ok) reject(new Error(payload.error||'API error')); else resolve(payload.data); };
     const q = new URLSearchParams({ action, callback: cbName });
     for (const [k,v] of Object.entries(params)){ q.append(k, (typeof v==='object') ? JSON.stringify(v) : v); }
-    const script = document.createElement('script');
-    script.src = `${WEBAPP_URL}?${q.toString()}`;
-    script.onerror = ()=>{ cleanup(); reject(new Error('Network error')); };
-    document.body.appendChild(script);
+    const script = document.createElement('script'); script.src = `${WEBAPP_URL}?${q.toString()}`; script.onerror = ()=>{ cleanup(); reject(new Error('Network error')); }; document.body.appendChild(script);
   });
 }
 
-/* ============== Tabs ============== */
+/* Tabs */
 document.querySelectorAll('.tab').forEach(b=>{
   b.addEventListener('click', ()=>{
     document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
@@ -271,51 +267,39 @@ document.querySelectorAll('.tab').forEach(b=>{
   });
 });
 
-/* ============== Init ============== */
+/* Init */
 async function init(){
   await api('ping');
-
   const [cls,std,tchs,counts,attStats,payStats,tdy] = await Promise.all([
     api('listClasses'), api('listStudents'), api('listTeachers'),
     api('dashboardCounts'), api('statsAttendance',{months:6}), api('statsPayments',{months:6}),
     api('todaySchedule')
   ]);
+  fillSelect('attClass', cls,'id','class_name'); fillSelect('attFilterClass', cls,'id','class_name',true);
+  fillSelect('payClass', cls,'id','class_name'); fillSelect('invStudent', std,'id','full_name');
+  fillSelect('rcStudent', std,'id','full_name');  fillSelect('payStudent', std,'id','full_name');
+  fillSelect('attStudent', std,'id','full_name'); fillSelect('mkTeacher', tchs,'id','full_name',true);
 
-  fillSelect('attClass', cls,'id','class_name');
-  fillSelect('attFilterClass', cls,'id','class_name',true);
-  fillSelect('payClass', cls,'id','class_name');
-  fillSelect('invStudent', std,'id','full_name');
-  fillSelect('rcStudent',  std,'id','full_name');
-  fillSelect('payStudent', std,'id','full_name');
-  fillSelect('attStudent', std,'id','full_name');
-  fillSelect('mkTeacher', tchs,'id','full_name',true);
-
-  statStudents.textContent = counts.students ?? 0;
-  statTeachers.textContent = counts.teachers ?? 0;
-  statClasses.textContent  = counts.classes ?? 0;
-  statIncome.textContent   = '¥' + (counts.income_jpy||0).toLocaleString();
-  sppUnpaid.textContent = counts.spp?.unpaid ?? 0;
-  sppPaid.textContent   = counts.spp?.paid ?? 0;
+  statStudents.textContent = counts.students ?? 0; statTeachers.textContent = counts.teachers ?? 0;
+  statClasses.textContent  = counts.classes ?? 0; statIncome.textContent   = '¥' + (counts.income_jpy||0).toLocaleString();
+  sppUnpaid.textContent = counts.spp?.unpaid ?? 0; sppPaid.textContent   = counts.spp?.paid ?? 0;
 
   labelToday.textContent = tdy.day || '—';
   todayList.innerHTML = (tdy.classes?.length)
     ? tdy.classes.map(c=>`<div class="flex items-center justify-between" style="border-top:1px dashed rgba(255,255,255,.12);padding:8px 0"><div>${c.class_name}</div><div class="text-sm" style="color:#93c5fd">${c.time||''}</div></div>`).join('')
     : 'Tidak ada jadwal hari ini.';
 
-  renderAttChart(attStats||[]);
-  renderPayChart(payStats||[]);
-
+  renderAttChart(attStats||[]); renderPayChart(payStats||[]);
   dashMonth.value = new Date().toISOString().slice(0,7);
 }
 
 function fillSelect(id, arr, val, text, addAll){
   const el = document.getElementById(id); if (!el) return;
-  el.innerHTML = '';
-  if (addAll) el.append(new Option('— Semua —',''));
+  el.innerHTML = ''; if (addAll) el.append(new Option('— Semua —',''));
   (arr||[]).forEach(x=> el.append(new Option(x[text], x[val])));
 }
 
-/* ===== Absensi ===== */
+/* Absensi */
 btnMarkAtt?.addEventListener('click', async ()=>{
   await api('markAttendance', { class_id:attClass.value, student_id:attStudent.value, date:attDate.value, status:attStatus.value, note:attNote.value });
   attNote.value=''; alert('Absensi tersimpan.');
@@ -330,14 +314,33 @@ btnLoadAtt?.addEventListener('click', async ()=>{
   el.innerHTML = `<div style="overflow:auto"><table>${thead}${tbody}</table></div>`;
 });
 
-/* ===== Pembayaran ===== */
+/* Pembayaran */
+async function updateQuote(){
+  payHint.textContent = '';
+  if (!payStudent.value || !payClass.value || !payMonth.value) return;
+  try{
+    const q = await api('quoteClassFee', { student_id:payStudent.value, class_id:payClass.value, month:payMonth.value });
+    if (q && typeof q.fee_jpy === 'number'){
+      payAmount.value = q.fee_jpy;
+      const ratePct = Math.round((q.rate||1)*100);
+      const base    = (q.base_jpy||0).toLocaleString();
+      const fee     = (q.fee_jpy||0).toLocaleString();
+      const who     = q.family_pos && q.family_pos>1 ? `Anak ke-${q.family_pos}` : 'Anak pertama';
+      payHint.textContent = `Tarif ${q.class_name||payClass.value}: ¥${base} × ${ratePct}% → Dibayar ¥${fee} (${who}, diskon keluarga bila berlaku).`;
+    }
+  }catch(e){}
+}
+payStudent?.addEventListener('change', updateQuote);
+payClass?.addEventListener('change', updateQuote);
+payMonth?.addEventListener('change', updateQuote);
+
 btnPay?.addEventListener('click', async ()=>{
   await api('recordPayment', { student_id:payStudent.value, class_id:payClass.value, month:payMonth.value,
     amount_jpy:Number(payAmount.value||0), package_months:Number(payPkg.value||1), note:payNote.value });
   payNote.value=''; alert('Pembayaran dicatat.');
 });
 
-/* ===== Invoice ===== */
+/* Invoice */
 btnCalcInv?.addEventListener('click', async ()=>{
   const data = await api('calcInvoice', { student_id:invStudent.value, month:invMonth.value });
   invResult.textContent = JSON.stringify(data, null, 2);
@@ -353,7 +356,7 @@ btnInvBundle?.addEventListener('click', async ()=>{
   alert('Invoice bundle dibuat. FileId: '+res.fileId);
 });
 
-/* ===== Kuitansi ===== */
+/* Kuitansi */
 btnReceipt?.addEventListener('click', async ()=>{
   const months = (rcMonths.value||'').split(',').map(s=>s.trim()).filter(Boolean);
   const class_ids = (rcClasses.value||'').split(',').map(s=>s.trim()).filter(Boolean);
@@ -361,7 +364,7 @@ btnReceipt?.addEventListener('click', async ()=>{
   alert('Kuitansi dibuat. FileId: '+res.fileId);
 });
 
-/* ===== Mukafaah ===== */
+/* Mukafaah */
 btnCalcMk?.addEventListener('click', async ()=>{
   const data = await api('calcMukafaah', { month:mkMonth.value, teacher_id:mkTeacher.value||null });
   mkResult.textContent = JSON.stringify(data, null, 2);
@@ -371,24 +374,22 @@ btnMkPdf?.addEventListener('click', async ()=>{
   alert('PDF mukafaah dibuat. FileId: '+res.fileId);
 });
 
-/* ===== Pengeluaran ===== */
+/* Pengeluaran */
 btnExAdd?.addEventListener('click', async ()=>{
   await api('recordExpense', { date:exDate.value, category:exCat.value, amount_jpy:Number(exAmt.value||0), description:exDesc.value, note:exNote.value });
-  exDesc.value=''; exNote.value='';
-  alert('Pengeluaran dicatat.');
+  exDesc.value=''; exNote.value=''; alert('Pengeluaran dicatat.');
 });
 btnExPdf?.addEventListener('click', async ()=>{
   const res = await api('expensesReportPdf', { month:exMonth.value });
   alert('PDF pengeluaran dibuat. FileId: '+res.fileId);
 });
 
-/* ===== Settings ===== */
+/* Settings */
 btnShowBrand?.addEventListener('click', async ()=>{
-  const r = await api('brandIds');
-  brandInfo.textContent = JSON.stringify(r, null, 2);
+  const r = await api('brandIds'); brandInfo.textContent = JSON.stringify(r, null, 2);
 });
 
-/* ===== Grafik stabil ===== */
+/* Grafik stabil */
 let CH_ATT=null, CH_PAY=null;
 function makeLineChart(ctx, labels, datasets){
   if (!ctx) return;
