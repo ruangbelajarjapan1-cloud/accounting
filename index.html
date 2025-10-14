@@ -1,184 +1,290 @@
 <!doctype html>
 <html lang="id">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>RBMJ Dashboard</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>RBMJ — Sistem Manajemen</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
-  body{font-family:Inter,system-ui,Segoe UI,Arial}
-  .card{border-radius:1rem; box-shadow:0 10px 20px rgba(0,0,0,.06)}
-  .tab.active{background:#0ea5e9;color:white}
+  :root { --card: #ffffff; --ink: #0f172a; --muted:#64748b; }
+  body{font-family:Inter,system-ui,Segoe UI,Arial;background:#f6f7fb;color:var(--ink)}
+  .card{background:var(--card);border-radius:14px;box-shadow:0 8px 20px rgba(15,23,42,.05)}
+  .tile{display:flex;gap:.75rem;align-items:flex-start;padding:1rem;border-radius:14px;background:#fff;box-shadow:0 6px 16px rgba(0,0,0,.05)}
+  .tab.active{background:#0ea5e9;color:#fff}
+  .pill{font-size:.75rem;padding:.25rem .5rem;border-radius:.5rem}
 </style>
 </head>
-<body class="bg-slate-50 text-slate-800">
+<body>
 <div class="max-w-7xl mx-auto p-4 md:p-8">
-  <header class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6">
-    <h1 class="text-2xl md:text-3xl font-extrabold">RBMJ — Ruang Belajar Muslim Jepang</h1>
-    <nav class="flex gap-2 flex-wrap">
-      <button class="tab px-4 py-2 rounded-xl bg-white card active" data-tab="home">Dashboard</button>
-      <button class="tab px-4 py-2 rounded-xl bg-white card" data-tab="attendance">Absensi</button>
-      <button class="tab px-4 py-2 rounded-xl bg-white card" data-tab="spp">Pembayaran SPP</button>
-      <button class="tab px-4 py-2 rounded-xl bg-white card" data-tab="invoice">Tagihan & PDF</button>
-      <button class="tab px-4 py-2 rounded-xl bg-white card" data-tab="mukafaah">Mukafaah Guru</button>
-      <button class="tab px-4 py-2 rounded-xl bg-white card" data-tab="expense">Pengeluaran</button>
-      <button class="tab px-4 py-2 rounded-xl bg-white card" data-tab="settings">Settings</button>
-    </nav>
+  <header class="mb-6">
+    <h1 class="text-3xl font-extrabold">Dashboard</h1>
+    <p class="text-slate-500">Sistem Manajemen RBMJ Jepang</p>
+    <div class="mt-4 flex gap-2 flex-wrap">
+      <button class="tab px-4 py-2 rounded-xl card active" data-tab="home">Dashboard</button>
+      <button class="tab px-4 py-2 rounded-xl card" data-tab="attendance">Absensi</button>
+      <button class="tab px-4 py-2 rounded-xl card" data-tab="spp">Pembayaran</button>
+      <button class="tab px-4 py-2 rounded-xl card" data-tab="invoice">Tagihan & PDF</button>
+      <button class="tab px-4 py-2 rounded-xl card" data-tab="mukafaah">Mukafaah</button>
+      <button class="tab px-4 py-2 rounded-xl card" data-tab="expense">Pengeluaran</button>
+      <button class="tab px-4 py-2 rounded-xl card" data-tab="settings">Settings</button>
+    </div>
   </header>
 
-  <!-- DASHBOARD -->
-  <section id="home" class="panel card bg-white p-4 md:p-6">
-    <div class="grid md:grid-cols-2 gap-6">
-      <div class="p-3 rounded-xl bg-slate-50">
+  <!-- ======= HOME ======= -->
+  <section id="home" class="panel space-y-6">
+    <div class="grid md:grid-cols-4 gap-4">
+      <div class="tile">
+        <div class="text-slate-400">👥</div>
+        <div>
+          <div class="text-sm text-slate-500">Total Siswa</div>
+          <div id="statStudents" class="text-2xl font-bold">0</div>
+          <div class="text-xs text-slate-400">dari bulan lalu</div>
+        </div>
+      </div>
+      <div class="tile">
+        <div class="text-slate-400">🧑‍🏫</div>
+        <div>
+          <div class="text-sm text-slate-500">Total Guru</div>
+          <div id="statTeachers" class="text-2xl font-bold">0</div>
+          <div class="text-xs text-slate-400">dari bulan lalu</div>
+        </div>
+      </div>
+      <div class="tile">
+        <div class="text-slate-400">📘</div>
+        <div>
+          <div class="text-sm text-slate-500">Total Kelas</div>
+          <div id="statClasses" class="text-2xl font-bold">0</div>
+          <div class="text-xs text-slate-400">dari bulan lalu</div>
+        </div>
+      </div>
+      <div class="tile">
+        <div class="text-slate-400">💴</div>
+        <div>
+          <div class="text-sm text-slate-500">Pemasukan Bulan Ini</div>
+          <div id="statIncome" class="text-2xl font-bold">¥0</div>
+          <div class="text-xs text-green-600">0% dari bulan lalu</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-4">
+      <div class="card p-4">
+        <div class="flex items-center justify-between mb-2">
+          <div class="font-semibold">Jadwal Hari Ini</div>
+          <span id="labelToday" class="pill bg-slate-100 text-slate-600">—</span>
+        </div>
+        <div id="todayList" class="text-sm text-slate-600">Kelas yang dijadwalkan hari ini</div>
+      </div>
+      <div class="card p-4">
+        <div class="font-semibold mb-2">Status Pembayaran SPP</div>
+        <div class="flex items-center justify-between bg-slate-50 p-3 rounded-lg">
+          <div>
+            <div class="font-semibold">Belum Bayar</div>
+            <div class="text-xs text-slate-500">bulan ini</div>
+          </div>
+          <div class="flex items-center gap-3">
+            <span id="sppUnpaid" class="text-xl font-bold">0</span>
+            <span class="pill bg-rose-600 text-white">Menunggu</span>
+          </div>
+        </div>
+        <div class="flex items-center justify-between bg-slate-50 p-3 rounded-lg mt-3">
+          <div>
+            <div class="font-semibold">Sudah Bayar</div>
+            <div class="text-xs text-slate-500">bulan ini</div>
+          </div>
+          <div class="flex items-center gap-3">
+            <span id="sppPaid" class="text-xl font-bold">0</span>
+            <span class="pill bg-black text-white">Lunas</span>
+          </div>
+        </div>
+        <div class="mt-3">
+          <button class="w-full px-4 py-2 rounded-lg bg-slate-900 text-white text-sm" onclick="goInvoice()">Lihat Detail Pembayaran</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-4">
+      <div class="card p-4">
         <div class="flex items-center justify-between">
-          <h2 class="text-lg font-bold">Grafik Absensi (6 bulan)</h2>
-          <input id="dashMonth" type="month" class="border rounded-lg p-1 text-sm" />
+          <div class="font-semibold">Grafik Absensi (6 bulan)</div>
+          <input id="dashMonth" type="month" class="border rounded-lg p-1 text-sm">
         </div>
         <canvas id="attChart" height="160" class="mt-3"></canvas>
       </div>
-      <div class="p-3 rounded-xl bg-slate-50">
-        <h2 class="text-lg font-bold">Grafik Pembayaran (6 bulan)</h2>
+      <div class="card p-4">
+        <div class="font-semibold">Grafik Pembayaran (6 bulan)</div>
         <canvas id="payChart" height="160" class="mt-3"></canvas>
       </div>
     </div>
 
-    <div class="mt-6">
-      <h2 class="text-lg font-bold mb-2">Rekapan — Siswa Belum Bayar Bulan Ini</h2>
-      <div id="unpaidWrap" class="grid md:grid-cols-2 gap-4"></div>
+    <div class="card p-4">
+      <div class="font-semibold mb-2">Aktivitas Terkini</div>
+      <div class="text-sm text-slate-500">Belum ada aktivitas terkini</div>
     </div>
   </section>
 
-  <!-- ABSENSI -->
-  <section id="attendance" class="panel card bg-white p-4 md:p-6 hidden">
-    <h2 class="text-xl font-bold mb-3">Absensi Kelas</h2>
-    <div class="grid md:grid-cols-4 gap-3 items-end">
-      <div><label class="text-sm">Kelas</label><select id="attClass" class="w-full border rounded-lg p-2"></select></div>
-      <div><label class="text-sm">Siswa</label><select id="attStudent" class="w-full border rounded-lg p-2"></select></div>
-      <div><label class="text-sm">Tanggal</label><input id="attDate" type="date" class="w-full border rounded-lg p-2"></div>
-      <div><label class="text-sm">Status</label>
-        <select id="attStatus" class="w-full border rounded-lg p-2">
-          <option>Present</option><option>Absent</option><option>Late</option><option>Excused</option>
-        </select>
+  <!-- ======= ABSENSI ======= -->
+  <section id="attendance" class="panel hidden">
+    <div class="card p-4">
+      <div class="text-xl font-bold mb-3">Absensi Kelas</div>
+      <div class="grid md:grid-cols-4 gap-3 items-end">
+        <div><label class="text-sm">Kelas</label><select id="attClass" class="w-full border rounded-lg p-2"></select></div>
+        <div><label class="text-sm">Siswa</label><select id="attStudent" class="w-full border rounded-lg p-2"></select></div>
+        <div><label class="text-sm">Tanggal</label><input id="attDate" type="date" class="w-full border rounded-lg p-2"></div>
+        <div><label class="text-sm">Status</label>
+          <select id="attStatus" class="w-full border rounded-lg p-2">
+            <option>Present</option><option>Absent</option><option>Late</option><option>Excused</option>
+          </select>
+        </div>
+        <div class="md:col-span-4 flex gap-2">
+          <input id="attNote" placeholder="Catatan (opsional)" class="flex-1 border rounded-lg p-2">
+          <button id="btnMarkAtt" class="px-4 py-2 rounded-lg bg-sky-600 text-white">Simpan</button>
+        </div>
       </div>
-      <div class="md:col-span-4 flex gap-2">
-        <input id="attNote" placeholder="Catatan (opsional)" class="flex-1 border rounded-lg p-2">
-        <button id="btnMarkAtt" class="px-4 py-2 rounded-lg bg-sky-600 text-white transition hover:scale-[1.01]">Simpan</button>
+      <hr class="my-4">
+      <div class="grid md:grid-cols-3 gap-3">
+        <div><label class="text-sm">Filter Kelas</label><select id="attFilterClass" class="w-full border rounded-lg p-2"></select></div>
+        <div><label class="text-sm">Bulan</label><input id="attFilterMonth" type="month" class="w-full border rounded-lg p-2"></div>
+        <div class="flex items-end"><button id="btnLoadAtt" class="px-4 py-2 rounded-lg bg-slate-900 text-white w-full">Muat Rekap</button></div>
       </div>
-    </div>
-    <hr class="my-4">
-    <div class="grid md:grid-cols-3 gap-3">
-      <div><label class="text-sm">Filter Kelas</label><select id="attFilterClass" class="w-full border rounded-lg p-2"></select></div>
-      <div><label class="text-sm">Bulan</label><input id="attFilterMonth" type="month" class="w-full border rounded-lg p-2"></div>
-      <div class="flex items-end"><button id="btnLoadAtt" class="px-4 py-2 rounded-lg bg-slate-800 text-white w-full transition hover:scale-[1.01]">Muat Rekap</button></div>
-    </div>
-    <div id="attTable" class="mt-4 overflow-auto"></div>
-  </section>
-
-  <!-- PEMBAYARAN -->
-  <section id="spp" class="panel card bg-white p-4 md:p-6 hidden">
-    <h2 class="text-xl font-bold mb-3">Pembayaran SPP</h2>
-    <div class="grid md:grid-cols-6 gap-3">
-      <div class="md:col-span-2"><label class="text-sm">Siswa</label><select id="payStudent" class="w-full border rounded-lg p-2"></select></div>
-      <div><label class="text-sm">Kelas</label><select id="payClass" class="w-full border rounded-lg p-2"></select></div>
-      <div><label class="text-sm">Bulan</label><input id="payMonth" type="month" class="w-full border rounded-lg p-2"></div>
-      <div><label class="text-sm">Jumlah (JPY)</label><input id="payAmount" type="number" class="w-full border rounded-lg p-2"></div>
-      <div><label class="text-sm">Paket (bulan)</label><input id="payPkg" type="number" value="1" min="1" class="w-full border rounded-lg p-2"></div>
-      <div class="md:col-span-6 flex gap-2">
-        <input id="payNote" placeholder="Catatan" class="flex-1 border rounded-lg p-2">
-        <button id="btnPay" class="px-4 py-2 rounded-lg bg-green-600 text-white transition hover:scale-[1.01]">Catat Pembayaran</button>
-      </div>
+      <div id="attTable" class="mt-4 overflow-auto"></div>
     </div>
   </section>
 
-  <!-- TAGIHAN & PDF -->
-  <section id="invoice" class="panel card bg-white p-4 md:p-6 hidden">
-    <h2 class="text-xl font-bold mb-3">Tagihan & PDF</h2>
-    <div class="grid md:grid-cols-6 gap-3">
-      <div class="md:col-span-2"><label class="text-sm">Siswa</label><select id="invStudent" class="w-full border rounded-lg p-2"></select></div>
-      <div><label class="text-sm">Bulan</label><input id="invMonth" type="month" class="w-full border rounded-lg p-2"></div>
-      <div class="flex items-end"><button id="btnCalcInv" class="w-full px-4 py-2 rounded-lg bg-slate-800 text-white">Hitung</button></div>
-      <div class="flex items-end"><button id="btnGenInv" class="w-full px-4 py-2 rounded-lg bg-sky-600 text-white">Generate Invoice PDF</button></div>
-      <div class="md:col-span-6 grid md:grid-cols-3 gap-3">
-        <div><label class="text-sm">Bulan (multi kuitansi)</label><input id="rcMonths" placeholder="YYYY-MM,YYYY-MM" class="w-full border rounded-lg p-2"></div>
-        <div><label class="text-sm">Kelas (opsional, pisahkan koma)</label><input id="rcClasses" placeholder="CLASS001,CLASS002" class="w-full border rounded-lg p-2"></div>
-        <div class="flex items-end"><button id="btnReceipt" class="w-full px-4 py-2 rounded-lg bg-emerald-600 text-white">Generate Kuitansi PDF</button></div>
+  <!-- ======= PEMBAYARAN ======= -->
+  <section id="spp" class="panel hidden">
+    <div class="card p-4">
+      <div class="text-xl font-bold mb-3">Pembayaran SPP</div>
+      <div class="grid md:grid-cols-6 gap-3">
+        <div class="md:col-span-2"><label class="text-sm">Siswa</label><select id="payStudent" class="w-full border rounded-lg p-2"></select></div>
+        <div><label class="text-sm">Kelas</label><select id="payClass" class="w-full border rounded-lg p-2"></select></div>
+        <div><label class="text-sm">Bulan</label><input id="payMonth" type="month" class="w-full border rounded-lg p-2"></div>
+        <div><label class="text-sm">Jumlah (JPY)</label><input id="payAmount" type="number" class="w-full border rounded-lg p-2"></div>
+        <div><label class="text-sm">Paket (bulan)</label><input id="payPkg" type="number" value="1" min="1" class="w-full border rounded-lg p-2"></div>
+        <div class="md:col-span-6 flex gap-2">
+          <input id="payNote" placeholder="Catatan" class="flex-1 border rounded-lg p-2">
+          <button id="btnPay" class="px-4 py-2 rounded-lg bg-green-600 text-white">Catat Pembayaran</button>
+        </div>
       </div>
     </div>
-    <pre id="invResult" class="mt-4 bg-slate-100 p-3 rounded-lg text-xs overflow-auto"></pre>
-
-    <hr class="my-6">
-    <h3 class="font-bold mb-2">Rekap SPP Per Kelas (PDF)</h3>
-    <div class="grid md:grid-cols-4 gap-3">
-      <div><label class="text-sm">Kelas</label><select id="recapClass" class="w-full border rounded-lg p-2"></select></div>
-      <div><label class="text-sm">Bulan</label><input id="recapMonth" type="month" class="w-full border rounded-lg p-2"></div>
-      <div class="flex items-end"><button id="btnRecapPdf" class="w-full px-4 py-2 rounded-lg bg-sky-600 text-white">Export PDF</button></div>
-    </div>
   </section>
 
-  <!-- MUKAFAAH -->
-  <section id="mukafaah" class="panel card bg-white p-4 md:p-6 hidden">
-    <h2 class="text-xl font-bold mb-3">Mukafaah Guru</h2>
-    <div class="grid md:grid-cols-5 gap-3">
-      <div><label class="text-sm">Bulan</label><input id="mkMonth" type="month" class="w-full border rounded-lg p-2"></div>
-      <div><label class="text-sm">Guru (opsional)</label><select id="mkTeacher" class="w-full border rounded-lg p-2"></select></div>
-      <div class="flex items-end"><button id="btnCalcMk" class="w-full px-4 py-2 rounded-lg bg-slate-800 text-white">Hitung</button></div>
-      <div class="flex items-end"><button id="btnMkPdf" class="w-full px-4 py-2 rounded-lg bg-sky-600 text-white">Export PDF</button></div>
-    </div>
-    <pre id="mkResult" class="mt-4 bg-slate-100 p-3 rounded-lg text-xs overflow-auto"></pre>
-  </section>
-
-  <!-- PENGELUARAN -->
-  <section id="expense" class="panel card bg-white p-4 md:p-6 hidden">
-    <h2 class="text-xl font-bold mb-3">Pengeluaran</h2>
-    <div class="grid md:grid-cols-6 gap-3">
-      <div><label class="text-sm">Tanggal</label><input id="exDate" type="date" class="w-full border rounded-lg p-2"></div>
-      <div><label class="text-sm">Kategori</label><input id="exCat" class="w-full border rounded-lg p-2" placeholder="Sewa, Listrik, ..."></div>
-      <div><label class="text-sm">Jumlah (JPY)</label><input id="exAmt" type="number" class="w-full border rounded-lg p-2"></div>
-      <div class="md:col-span-3"><label class="text-sm">Deskripsi</label><input id="exDesc" class="w-full border rounded-lg p-2"></div>
-      <div class="md:col-span-6 flex gap-2">
-        <input id="exNote" placeholder="Catatan (opsional)" class="flex-1 border rounded-lg p-2">
-        <button id="btnExAdd" class="px-4 py-2 rounded-lg bg-green-600 text-white">Simpan</button>
-      </div>
-    </div>
-    <hr class="my-6">
-    <h3 class="font-bold mb-2">Rekap & PDF</h3>
-    <div class="grid md:grid-cols-3 gap-3">
-      <div><label class="text-sm">Bulan</label><input id="exMonth" type="month" class="w-full border rounded-lg p-2"></div>
-      <div class="flex items-end"><button id="btnExPdf" class="w-full px-4 py-2 rounded-lg bg-sky-600 text-white">Export PDF</button></div>
-    </div>
-  </section>
-
-  <!-- SETTINGS -->
-  <section id="settings" class="panel card bg-white p-4 md:p-6 hidden">
-    <h2 class="text-xl font-bold mb-3">Settings</h2>
-    <div class="flex gap-2 items-end flex-wrap">
-      <button id="btnMakeFolder" class="px-4 py-2 rounded-lg bg-sky-600 text-white">Buat Folder PDF</button>
+  <!-- ======= TAGIHAN & PDF ======= -->
+  <section id="invoice" class="panel hidden">
+    <div class="card p-4 space-y-6">
       <div>
-        <label class="text-sm">Drive LOGO_FILE_ID</label>
-        <input id="logoId" class="border rounded-lg p-2" placeholder="1AbcDEFg...">
+        <div class="text-xl font-bold mb-3">Invoice & Kuitansi</div>
+        <div class="grid md:grid-cols-6 gap-3">
+          <div class="md:col-span-2"><label class="text-sm">Siswa</label><select id="invStudent" class="w-full border rounded-lg p-2"></select></div>
+          <div><label class="text-sm">Bulan</label><input id="invMonth" type="month" class="w-full border rounded-lg p-2"></div>
+          <div class="flex items-end"><button id="btnCalcInv" class="w-full px-4 py-2 rounded-lg bg-slate-900 text-white">Hitung Invoice</button></div>
+          <div class="flex items-end"><button id="btnGenInv" class="w-full px-4 py-2 rounded-lg bg-sky-600 text-white">Generate Invoice (1 bulan)</button></div>
+        </div>
+        <pre id="invResult" class="mt-4 bg-slate-100 p-3 rounded-lg text-xs overflow-auto"></pre>
       </div>
-      <button id="btnSaveLogo" class="px-4 py-2 rounded-lg bg-slate-800 text-white">Simpan Logo</button>
-      <span id="folderInfo" class="text-sm text-slate-500"></span>
+
+      <div>
+        <div class="font-semibold mb-2">Invoice Bundle (Multi Kelas / Multi Bulan)</div>
+        <div class="grid md:grid-cols-3 gap-3">
+          <div><label class="text-sm">Bulan (pisahkan koma)</label><input id="ibMonths" placeholder="2025-01,2025-02" class="w-full border rounded-lg p-2"></div>
+          <div><label class="text-sm">Kelas (opsional, pisahkan koma)</label><input id="ibClasses" placeholder="CLASS001,CLASS002" class="w-full border rounded-lg p-2"></div>
+          <div class="flex items-end"><button id="btnInvBundle" class="w-full px-4 py-2 rounded-lg bg-emerald-600 text-white">Generate Invoice Bundle</button></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="font-semibold mb-2">Kuitansi (Multi Kelas / Multi Bulan)</div>
+        <div class="grid md:grid-cols-3 gap-3">
+          <div><label class="text-sm">Bulan (pisahkan koma)</label><input id="rcMonths" placeholder="2025-01,2025-02" class="w-full border rounded-lg p-2"></div>
+          <div><label class="text-sm">Kelas (opsional, pisahkan koma)</label><input id="rcClasses" placeholder="CLASS001,CLASS002" class="w-full border rounded-lg p-2"></div>
+          <div class="flex items-end"><button id="btnReceipt" class="w-full px-4 py-2 rounded-lg bg-indigo-600 text-white">Generate Kuitansi</button></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="font-semibold mb-2">Rekap SPP Per Kelas (PDF)</div>
+        <div class="grid md:grid-cols-4 gap-3">
+          <div><label class="text-sm">Kelas</label><select id="recapClass" class="w-full border rounded-lg p-2"></select></div>
+          <div><label class="text-sm">Bulan</label><input id="recapMonth" type="month" class="w-full border rounded-lg p-2"></div>
+          <div class="flex items-end"><button id="btnRecapPdf" class="w-full px-4 py-2 rounded-lg bg-sky-600 text-white">Export PDF</button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======= MUKAFAAH ======= -->
+  <section id="mukafaah" class="panel hidden">
+    <div class="card p-4">
+      <div class="text-xl font-bold mb-3">Mukafaah Guru</div>
+      <div class="grid md:grid-cols-5 gap-3">
+        <div><label class="text-sm">Bulan</label><input id="mkMonth" type="month" class="w-full border rounded-lg p-2"></div>
+        <div><label class="text-sm">Guru (opsional)</label><select id="mkTeacher" class="w-full border rounded-lg p-2"></select></div>
+        <div class="flex items-end"><button id="btnCalcMk" class="w-full px-4 py-2 rounded-lg bg-slate-900 text-white">Hitung</button></div>
+        <div class="flex items-end"><button id="btnMkPdf" class="w-full px-4 py-2 rounded-lg bg-sky-600 text-white">Export PDF</button></div>
+      </div>
+      <pre id="mkResult" class="mt-4 bg-slate-100 p-3 rounded-lg text-xs overflow-auto"></pre>
+    </div>
+  </section>
+
+  <!-- ======= PENGELUARAN ======= -->
+  <section id="expense" class="panel hidden">
+    <div class="card p-4">
+      <div class="text-xl font-bold mb-3">Pengeluaran</div>
+      <div class="grid md:grid-cols-6 gap-3">
+        <div><label class="text-sm">Tanggal</label><input id="exDate" type="date" class="w-full border rounded-lg p-2"></div>
+        <div><label class="text-sm">Kategori</label><input id="exCat" class="w-full border rounded-lg p-2" placeholder="Sewa, Listrik, ..."></div>
+        <div><label class="text-sm">Jumlah (JPY)</label><input id="exAmt" type="number" class="w-full border rounded-lg p-2"></div>
+        <div class="md:col-span-3"><label class="text-sm">Deskripsi</label><input id="exDesc" class="w-full border rounded-lg p-2"></div>
+        <div class="md:col-span-6 flex gap-2">
+          <input id="exNote" placeholder="Catatan (opsional)" class="flex-1 border rounded-lg p-2">
+          <button id="btnExAdd" class="px-4 py-2 rounded-lg bg-green-600 text-white">Simpan</button>
+        </div>
+      </div>
+      <hr class="my-6">
+      <div class="font-semibold mb-2">Rekap & PDF</div>
+      <div class="grid md:grid-cols-3 gap-3">
+        <div><label class="text-sm">Bulan</label><input id="exMonth" type="month" class="w-full border rounded-lg p-2"></div>
+        <div class="flex items-end"><button id="btnExPdf" class="w-full px-4 py-2 rounded-lg bg-sky-600 text-white">Export PDF</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======= SETTINGS ======= -->
+  <section id="settings" class="panel hidden">
+    <div class="card p-4">
+      <div class="text-xl font-bold mb-3">Settings</div>
+      <div class="flex gap-2 items-end flex-wrap">
+        <button id="btnMakeFolder" class="px-4 py-2 rounded-lg bg-sky-600 text-white">Buat Folder PDF</button>
+        <div>
+          <label class="text-sm">Drive LOGO_FILE_ID</label>
+          <input id="logoId" class="border rounded-lg p-2" placeholder="1AbcDEFg...">
+        </div>
+        <button id="btnSaveLogo" class="px-4 py-2 rounded-lg bg-slate-900 text-white">Simpan Logo</button>
+        <span id="folderInfo" class="text-sm text-slate-500"></span>
+      </div>
     </div>
   </section>
 </div>
 
 <script>
-const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbza6sbX4ROUBM-crFRaXTGYFkWxZ7baW0ePC5pRIlqfBAjz9f1gOao48zQtRxQqnbKUTQ/exec"; // /exec
+const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbza6sbX4ROUBM-crFRaXTGYFkWxZ7baW0ePC5pRIlqfBAjz9f1gOao48zQtRxQqnbKUTQ/exec"; // gunakan URL /exec
 
+/* ==== API GET-only (hindari preflight) ==== */
 function api(action, data = {}) {
-  // Hindari preflight: gunakan GET + querystring + tanpa header
-  const qs = new URLSearchParams({ action, ...Object.fromEntries(Object.entries(data).map(([k,v])=>[k, typeof v==='object'? JSON.stringify(v): v])) });
+  const params = {};
+  for (const [k,v] of Object.entries(data)) {
+    params[k] = (typeof v === 'object') ? JSON.stringify(v) : v;
+  }
+  const qs = new URLSearchParams({ action, ...params });
   const url = `${WEBAPP_URL}?${qs.toString()}`;
   return fetch(url, { method: 'GET', mode: 'cors', cache: 'no-cache' })
     .then(r => r.json())
     .then(j => { if (!j.ok) throw new Error(j.error || 'API error'); return j.data; });
 }
 
-
-/* Tabs */
+/* ==== Tabs ==== */
 document.querySelectorAll('.tab').forEach(b=>{
   b.addEventListener('click', ()=>{
     document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
@@ -187,189 +293,160 @@ document.querySelectorAll('.tab').forEach(b=>{
     document.getElementById(b.dataset.tab).classList.remove('hidden');
   });
 });
+function goInvoice(){ document.querySelector('[data-tab="invoice"]').click(); }
 
-/* Populate selects + dashboard */
+/* ==== Init ==== */
 async function init(){
-  // Cek koneksi cepat
-  await api('ping');
-
-  const [cls, std, tchs, cfg, attStats, payStats] = await Promise.all([
+  const [cls,std,tchs,cfg,counts,attStats,payStats,tdy] = await Promise.all([
     api('listClasses'), api('listStudents'), api('listTeachers'), api('getConfig'),
-    api('statsAttendance',{months:6}), api('statsPayments',{months:6})
+    api('dashboardCounts'), api('statsAttendance',{months:6}), api('statsPayments',{months:6}),
+    api('todaySchedule')
   ]);
+  fillSelect('attClass', cls,'id','class_name');
+  fillSelect('attFilterClass', cls,'id','class_name',true);
+  fillSelect('payClass', cls,'id','class_name');
+  fillSelect('recapClass', cls,'id','class_name');
+  fillSelect('invStudent', std,'id','full_name');
+  fillSelect('payStudent', std,'id','full_name');
+  fillSelect('attStudent', std,'id','full_name');
+  fillSelect('mkTeacher', tchs,'id','full_name',true);
 
-  fillSelect('attClass', cls, 'id','class_name');
-  fillSelect('attFilterClass', cls, 'id','class_name', true);
-  fillSelect('payClass', cls, 'id','class_name');
-  fillSelect('recapClass', cls, 'id','class_name');
-  fillSelect('attStudent', std, 'id','full_name');
-  fillSelect('payStudent', std, 'id','full_name');
-  fillSelect('invStudent', std, 'id','full_name');
-  fillSelect('mkTeacher', tchs, 'id','full_name', true);
+  if (cfg?.DRIVE_FOLDER_ID) folderInfo.textContent = 'Folder PDF: ' + cfg.DRIVE_FOLDER_ID;
+  if (cfg?.LOGO_FILE_ID) logoId.value = cfg.LOGO_FILE_ID;
 
-  if (cfg?.DRIVE_FOLDER_ID){ folderInfo.textContent = 'Folder PDF: ' + cfg.DRIVE_FOLDER_ID; }
-  if (cfg?.LOGO_FILE_ID){ logoId.value = cfg.LOGO_FILE_ID; }
+  // counts
+  statStudents.textContent = counts.students;
+  statTeachers.textContent = counts.teachers;
+  statClasses.textContent  = counts.classes;
+  statIncome.textContent   = '¥' + (counts.income_jpy||0).toLocaleString();
+  sppUnpaid.textContent = counts.spp.unpaid;
+  sppPaid.textContent   = counts.spp.paid;
+
+  // today schedule
+  labelToday.textContent = tdy.day;
+  if (tdy.classes.length){
+    todayList.innerHTML = tdy.classes.map(c=>`<div class="flex items-center justify-between border-b py-2"><div>${c.class_name}</div><div class="text-sm text-slate-500">${c.time||''}</div></div>`).join('');
+  }else{
+    todayList.textContent = 'Tidak ada jadwal hari ini.';
+  }
 
   renderAttChart(attStats);
   renderPayChart(payStats);
 
-  // unpaid bulan ini
   const now = new Date(), ym = now.toISOString().slice(0,7);
   dashMonth.value = ym;
-  loadUnpaid(ym);
 }
 
-function fillSelect(id, arr, valKey, textKey, addAll){
-  const el = document.getElementById(id);
-  el.innerHTML = '';
-  if (addAll) el.append(new Option('— Semua —',''));
-  arr.forEach(x=> el.append(new Option(x[textKey], x[valKey])));
-}
-
-/* Attendance */
-btnMarkAtt.onclick = async ()=>{
-  await api('markAttendance', {
-    class_id: attClass.value, student_id: attStudent.value, date: attDate.value,
-    status: attStatus.value, note: attNote.value
-  });
-  attNote.value=''; alert('Absensi tersimpan.');
-};
-btnLoadAtt.onclick = async ()=>{
-  const data = await api('getAttendance', { class_id: attFilterClass.value, month: attFilterMonth.value });
-  renderTable('attTable', data, ['date','class_id','student_id','status','note']);
-};
-
-/* Payments */
-btnPay.onclick = async ()=>{
-  await api('recordPayment', {
-    student_id: payStudent.value, class_id: payClass.value, month: payMonth.value,
-    amount_jpy: Number(payAmount.value||0), package_months: Number(payPkg.value||1),
-    note: payNote.value
-  });
-  payNote.value=''; alert('Pembayaran dicatat.');
-};
-
-/* Invoice & Receipt */
-btnCalcInv.onclick = async ()=>{
-  const data = await api('calcInvoice', { student_id: invStudent.value, month: invMonth.value });
-  invResult.textContent = JSON.stringify(data, null, 2);
-};
-btnGenInv.onclick = async ()=>{
-  const res = await api('generateInvoicePdf', { student_id: invStudent.value, month: invMonth.value });
-  alert('PDF Invoice dibuat. FileId: '+res.fileId);
-};
-btnRecapPdf.onclick = async ()=>{
-  const res = await api('classSppRecapPdf', { class_id: recapClass.value, month: recapMonth.value });
-  alert('PDF rekap kelas dibuat. FileId: '+res.fileId);
-};
-btnReceipt.onclick = async ()=>{
-  const months = rcMonths.value.split(',').map(s=>s.trim()).filter(Boolean);
-  const class_ids = rcClasses.value.split(',').map(s=>s.trim()).filter(Boolean);
-  const res = await api('generateReceiptPdf', { student_id: invStudent.value, months, class_ids });
-  alert('Kuitansi PDF dibuat. FileId: '+res.fileId);
-};
-
-/* Expenses */
-btnExAdd.onclick = async ()=>{
-  await api('recordExpense', { date: exDate.value, category: exCat.value, amount_jpy: Number(exAmt.value||0), description: exDesc.value, note: exNote.value });
-  exDesc.value=''; exNote.value='';
-  alert('Pengeluaran dicatat.');
-};
-btnExPdf.onclick = async ()=>{
-  const res = await api('expensesReportPdf', { month: exMonth.value });
-  alert('PDF pengeluaran dibuat. FileId: '+res.fileId);
-};
-
-/* Mukafaah */
-btnCalcMk.onclick = async ()=>{
-  const data = await api('calcMukafaah', { month: mkMonth.value, teacher_id: mkTeacher.value || null });
-  mkResult.textContent = JSON.stringify(data, null, 2);
-};
-btnMkPdf.onclick = async ()=>{
-  const res = await api('mukafaahPdf', { month: mkMonth.value, teacher_id: mkTeacher.value || null });
-  alert('PDF mukafaah dibuat. FileId: '+res.fileId);
-};
-
-/* Settings */
-btnMakeFolder.onclick = async ()=>{
-  const r = await api('createPdfFolder');
-  folderInfo.textContent = 'Folder PDF: ' + r.folderId;
-  alert('Folder PDF siap: '+r.folderId);
-};
-btnSaveLogo.onclick = async ()=>{
-  if (!logoId.value) return alert('Masukkan LOGO_FILE_ID dari Google Drive.');
-  await api('setLogoFileId', { fileId: logoId.value });
-  alert('Logo disimpan. Semua PDF akan menampilkan logo.');
-};
-
-/* Dashboard unpaid */
-async function loadUnpaid(ym){
-  const data = await api('unpaidByClass', { month: ym });
-  const wrap = document.getElementById('unpaidWrap');
-  wrap.innerHTML = '';
-  if (!data.length){ wrap.innerHTML = '<div class="text-sm text-slate-500">Semua sudah lunas bulan ini.</div>'; return; }
-  data.forEach(c=>{
-    const card = document.createElement('div');
-    card.className = 'p-4 card bg-white';
-    card.innerHTML = `<div class="font-semibold mb-2">${c.class_name}</div>` +
-      c.students.map(s=>`
-        <div class="flex items-center justify-between py-2 border-t">
-          <div>
-            <div class="font-medium">${s.student_name}</div>
-            <div class="text-xs text-slate-500">Sisa: ¥${s.due_jpy}</div>
-          </div>
-          <div class="flex gap-2">
-            <button class="px-3 py-1 rounded-lg bg-sky-600 text-white text-xs"
-              onclick="quickInvoice('${s.student_id}','${ym}')">Invoice</button>
-            <button class="px-3 py-1 rounded-lg bg-emerald-600 text-white text-xs"
-              onclick="quickReceipt('${s.student_id}','${ym}')">Cetak</button>
-          </div>
-        </div>`).join('');
-    wrap.append(card);
-  });
-}
-async function quickInvoice(student_id, month){
-  const r = await api('generateInvoicePdf', { student_id, month });
-  alert('Invoice dibuat. FileId: '+r.fileId);
-}
-async function quickReceipt(student_id, month){
-  const r = await api('generateReceiptPdf', { student_id, months:[month] });
-  alert('Kuitansi dibuat. FileId: '+r.fileId);
-}
-dashMonth.onchange = ()=> loadUnpaid(dashMonth.value);
-
-/* Utils */
-function renderTable(elId, rows, cols){
-  const el = document.getElementById(elId);
-  if (!rows || rows.length===0){ el.innerHTML = '<div class="text-sm text-slate-500">Tidak ada data.</div>'; return; }
-  const thead = '<thead><tr>'+ cols.map(c=>`<th class="px-3 py-2 text-left">${c}</th>`).join('') +'</tr></thead>';
-  const tbody = '<tbody>'+ rows.map(r=>'<tr>'+ cols.map(c=>`<td class="px-3 py-2 border-t">${r[c]??''}</td>`).join('') +'</tr>').join('') +'</tbody>';
-  el.innerHTML = `<table class="min-w-full text-sm">${thead}${tbody}</table>`;
-}
+/* ==== Charts ==== */
 function renderAttChart(data){
-  const ctx = document.getElementById('attChart').getContext('2d');
   const labels = data.map(x=>x.month);
-  new Chart(ctx, {
+  new Chart(document.getElementById('attChart'),{
     type:'line',
     data:{ labels, datasets:[
       {label:'Hadir', data:data.map(x=>x.present)},
       {label:'Izin', data:data.map(x=>x.excused)},
-      {label:'Terlambat', data:data.map(x=>x.late)},
-      {label:'Alfa', data:data.map(x=>x.absent)}
+      {label:'Telat', data:data.map(x=>x.late)},
+      {label:'Alfa',  data:data.map(x=>x.absent)}
     ]},
     options:{ responsive:true, maintainAspectRatio:false }
   });
 }
 function renderPayChart(data){
-  const ctx = document.getElementById('payChart').getContext('2d');
-  new Chart(ctx, {
+  new Chart(document.getElementById('payChart'),{
     type:'bar',
-    data:{ labels: data.map(x=>x.month), datasets:[{label:'SPP Dibayar (JPY)', data:data.map(x=>x.total_jpy)}]},
+    data:{ labels:data.map(x=>x.month), datasets:[{label:'SPP (JPY)', data:data.map(x=>x.total_jpy)}] },
     options:{ responsive:true, maintainAspectRatio:false }
   });
 }
 
-init().catch(e=> alert('API error: '+e.message+'\nCek: 1) WebApp Anyone 2) URL benar 3) Options CORS'));
+/* ==== Fill select ==== */
+function fillSelect(id, arr, val, text, addAll){
+  const el = document.getElementById(id); el.innerHTML = '';
+  if (addAll) el.append(new Option('— Semua —',''));
+  arr.forEach(x=> el.append(new Option(x[text], x[val])));
+}
+
+/* ==== Absensi ==== */
+btnMarkAtt.onclick = async ()=>{
+  await api('markAttendance', { class_id:attClass.value, student_id:attStudent.value, date:attDate.value, status:attStatus.value, note:attNote.value });
+  attNote.value=''; alert('Absensi tersimpan.');
+};
+btnLoadAtt.onclick = async ()=>{
+  const rows = await api('getAttendance', { class_id:attFilterClass.value, month:attFilterMonth.value });
+  const el = document.getElementById('attTable');
+  if(!rows.length){ el.innerHTML = '<div class="text-sm text-slate-500">Tidak ada data.</div>'; return; }
+  const cols = ['date','class_id','student_id','status','note'];
+  const thead = '<thead><tr>'+ cols.map(c=>`<th class="px-3 py-2 text-left">${c}</th>`).join('') +'</tr></thead>';
+  const tbody = '<tbody>'+ rows.map(r=>'<tr>'+ cols.map(c=>`<td class="px-3 py-2 border-t">${r[c]??''}</td>`).join('') +'</tr>').join('') +'</tbody>';
+  el.innerHTML = `<table class="min-w-full text-sm">${thead}${tbody}</table>`;
+};
+
+/* ==== Pembayaran ==== */
+btnPay.onclick = async ()=>{
+  await api('recordPayment', { student_id:payStudent.value, class_id:payClass.value, month:payMonth.value,
+    amount_jpy:Number(payAmount.value||0), package_months:Number(payPkg.value||1), note:payNote.value });
+  payNote.value=''; alert('Pembayaran dicatat.');
+};
+
+/* ==== Invoice & Receipt ==== */
+btnCalcInv.onclick = async ()=>{
+  const data = await api('calcInvoice', { student_id:invStudent.value, month:invMonth.value });
+  invResult.textContent = JSON.stringify(data, null, 2);
+};
+btnGenInv.onclick = async ()=>{
+  const res = await api('generateInvoicePdf', { student_id:invStudent.value, month:invMonth.value });
+  alert('Invoice (1 bulan) dibuat. FileId: '+res.fileId);
+};
+btnInvBundle.onclick = async ()=>{
+  const months = ibMonths.value.split(',').map(s=>s.trim()).filter(Boolean);
+  const class_ids = ibClasses.value.split(',').map(s=>s.trim()).filter(Boolean);
+  const res = await api('generateInvoiceBundlePdf', { student_id:invStudent.value, months, class_ids });
+  alert('Invoice bundle dibuat. FileId: '+res.fileId);
+};
+btnReceipt.onclick = async ()=>{
+  const months = rcMonths.value.split(',').map(s=>s.trim()).filter(Boolean);
+  const class_ids = rcClasses.value.split(',').map(s=>s.trim()).filter(Boolean);
+  const res = await api('generateReceiptPdf', { student_id:invStudent.value, months, class_ids });
+  alert('Kuitansi dibuat. FileId: '+res.fileId);
+};
+btnRecapPdf.onclick = async ()=>{
+  const res = await api('classSppRecapPdf', { class_id:recapClass.value, month:recapMonth.value });
+  alert('PDF rekap kelas dibuat. FileId: '+res.fileId);
+};
+
+/* ==== Pengeluaran ==== */
+btnExAdd.onclick = async ()=>{
+  await api('recordExpense', { date:exDate.value, category:exCat.value, amount_jpy:Number(exAmt.value||0), description:exDesc.value, note:exNote.value });
+  exDesc.value=''; exNote.value='';
+  alert('Pengeluaran dicatat.');
+};
+btnExPdf.onclick = async ()=>{
+  const res = await api('expensesReportPdf', { month:exMonth.value });
+  alert('PDF pengeluaran dibuat. FileId: '+res.fileId);
+};
+
+/* ==== Mukafaah ==== */
+btnCalcMk.onclick = async ()=>{
+  const data = await api('calcMukafaah', { month:mkMonth.value, teacher_id:mkTeacher.value||null });
+  mkResult.textContent = JSON.stringify(data, null, 2);
+};
+btnMkPdf.onclick = async ()=>{
+  const res = await api('mukafaahPdf', { month:mkMonth.value, teacher_id:mkTeacher.value||null });
+  alert('PDF mukafaah dibuat. FileId: '+res.fileId);
+};
+
+/* ==== Settings ==== */
+btnMakeFolder.onclick = async ()=>{
+  const r = await api('createPdfFolder'); folderInfo.textContent = 'Folder PDF: '+r.folderId;
+  alert('Folder PDF siap: '+r.folderId);
+};
+btnSaveLogo.onclick = async ()=>{
+  if (!logoId.value) return alert('Masukkan LOGO_FILE_ID.');
+  await api('setLogoFileId', { fileId:logoId.value });
+  alert('Logo disimpan.');
+};
+
+init().catch(e=> alert('API error: '+e.message+'\nCek: 1) WebApp Anyone 2) URL /exec 3) Spreadsheet headers OK'));
 </script>
 </body>
 </html>
