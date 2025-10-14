@@ -1,30 +1,57 @@
 <!doctype html>
 <html lang="id">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>RBMJ Dashboard</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-<style> body{font-family:Inter,system-ui,Segoe UI,Arial} .card{border-radius:1rem; box-shadow:0 10px 20px rgba(0,0,0,.06)} </style>
+<style>
+  body{font-family:Inter,system-ui,Segoe UI,Arial}
+  .card{border-radius:1rem; box-shadow:0 10px 20px rgba(0,0,0,.06)}
+  .tab.active{background:#0ea5e9;color:white}
+</style>
 </head>
 <body class="bg-slate-50 text-slate-800">
-<div class="max-w-6xl mx-auto p-4 md:p-8">
+<div class="max-w-7xl mx-auto p-4 md:p-8">
   <header class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6">
     <h1 class="text-2xl md:text-3xl font-extrabold">RBMJ — Ruang Belajar Muslim Jepang</h1>
     <nav class="flex gap-2 flex-wrap">
+      <button class="tab px-4 py-2 rounded-xl bg-white card active" data-tab="home">Dashboard</button>
       <button class="tab px-4 py-2 rounded-xl bg-white card" data-tab="attendance">Absensi</button>
       <button class="tab px-4 py-2 rounded-xl bg-white card" data-tab="spp">Pembayaran SPP</button>
       <button class="tab px-4 py-2 rounded-xl bg-white card" data-tab="invoice">Tagihan & PDF</button>
       <button class="tab px-4 py-2 rounded-xl bg-white card" data-tab="mukafaah">Mukafaah Guru</button>
       <button class="tab px-4 py-2 rounded-xl bg-white card" data-tab="expense">Pengeluaran</button>
-      <button class="tab px-4 py-2 rounded-xl bg-white card" data-tab="cashbook">Buku Kas</button>
       <button class="tab px-4 py-2 rounded-xl bg-white card" data-tab="settings">Settings</button>
     </nav>
   </header>
 
-  <section id="attendance" class="panel card bg-white p-4 md:p-6">
+  <!-- DASHBOARD -->
+  <section id="home" class="panel card bg-white p-4 md:p-6">
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="p-3 rounded-xl bg-slate-50">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-bold">Grafik Absensi (6 bulan)</h2>
+          <input id="dashMonth" type="month" class="border rounded-lg p-1 text-sm" />
+        </div>
+        <canvas id="attChart" height="160" class="mt-3"></canvas>
+      </div>
+      <div class="p-3 rounded-xl bg-slate-50">
+        <h2 class="text-lg font-bold">Grafik Pembayaran (6 bulan)</h2>
+        <canvas id="payChart" height="160" class="mt-3"></canvas>
+      </div>
+    </div>
+
+    <div class="mt-6">
+      <h2 class="text-lg font-bold mb-2">Rekapan — Siswa Belum Bayar Bulan Ini</h2>
+      <div id="unpaidWrap" class="grid md:grid-cols-2 gap-4"></div>
+    </div>
+  </section>
+
+  <!-- ABSENSI -->
+  <section id="attendance" class="panel card bg-white p-4 md:p-6 hidden">
     <h2 class="text-xl font-bold mb-3">Absensi Kelas</h2>
     <div class="grid md:grid-cols-4 gap-3 items-end">
       <div><label class="text-sm">Kelas</label><select id="attClass" class="w-full border rounded-lg p-2"></select></div>
@@ -37,18 +64,19 @@
       </div>
       <div class="md:col-span-4 flex gap-2">
         <input id="attNote" placeholder="Catatan (opsional)" class="flex-1 border rounded-lg p-2">
-        <button id="btnMarkAtt" class="px-4 py-2 rounded-lg bg-sky-600 text-white">Simpan</button>
+        <button id="btnMarkAtt" class="px-4 py-2 rounded-lg bg-sky-600 text-white transition hover:scale-[1.01]">Simpan</button>
       </div>
     </div>
     <hr class="my-4">
     <div class="grid md:grid-cols-3 gap-3">
       <div><label class="text-sm">Filter Kelas</label><select id="attFilterClass" class="w-full border rounded-lg p-2"></select></div>
       <div><label class="text-sm">Bulan</label><input id="attFilterMonth" type="month" class="w-full border rounded-lg p-2"></div>
-      <div class="flex items-end"><button id="btnLoadAtt" class="px-4 py-2 rounded-lg bg-slate-800 text-white w-full">Muat Rekap</button></div>
+      <div class="flex items-end"><button id="btnLoadAtt" class="px-4 py-2 rounded-lg bg-slate-800 text-white w-full transition hover:scale-[1.01]">Muat Rekap</button></div>
     </div>
     <div id="attTable" class="mt-4 overflow-auto"></div>
   </section>
 
+  <!-- PEMBAYARAN -->
   <section id="spp" class="panel card bg-white p-4 md:p-6 hidden">
     <h2 class="text-xl font-bold mb-3">Pembayaran SPP</h2>
     <div class="grid md:grid-cols-6 gap-3">
@@ -59,18 +87,24 @@
       <div><label class="text-sm">Paket (bulan)</label><input id="payPkg" type="number" value="1" min="1" class="w-full border rounded-lg p-2"></div>
       <div class="md:col-span-6 flex gap-2">
         <input id="payNote" placeholder="Catatan" class="flex-1 border rounded-lg p-2">
-        <button id="btnPay" class="px-4 py-2 rounded-lg bg-green-600 text-white">Catat Pembayaran</button>
+        <button id="btnPay" class="px-4 py-2 rounded-lg bg-green-600 text-white transition hover:scale-[1.01]">Catat Pembayaran</button>
       </div>
     </div>
   </section>
 
+  <!-- TAGIHAN & PDF -->
   <section id="invoice" class="panel card bg-white p-4 md:p-6 hidden">
     <h2 class="text-xl font-bold mb-3">Tagihan & PDF</h2>
-    <div class="grid md:grid-cols-5 gap-3">
+    <div class="grid md:grid-cols-6 gap-3">
       <div class="md:col-span-2"><label class="text-sm">Siswa</label><select id="invStudent" class="w-full border rounded-lg p-2"></select></div>
       <div><label class="text-sm">Bulan</label><input id="invMonth" type="month" class="w-full border rounded-lg p-2"></div>
       <div class="flex items-end"><button id="btnCalcInv" class="w-full px-4 py-2 rounded-lg bg-slate-800 text-white">Hitung</button></div>
-      <div class="flex items-end"><button id="btnGenInv" class="w-full px-4 py-2 rounded-lg bg-sky-600 text-white">Generate PDF</button></div>
+      <div class="flex items-end"><button id="btnGenInv" class="w-full px-4 py-2 rounded-lg bg-sky-600 text-white">Generate Invoice PDF</button></div>
+      <div class="md:col-span-6 grid md:grid-cols-3 gap-3">
+        <div><label class="text-sm">Bulan (multi kuitansi)</label><input id="rcMonths" placeholder="YYYY-MM,YYYY-MM" class="w-full border rounded-lg p-2"></div>
+        <div><label class="text-sm">Kelas (opsional, pisahkan koma)</label><input id="rcClasses" placeholder="CLASS001,CLASS002" class="w-full border rounded-lg p-2"></div>
+        <div class="flex items-end"><button id="btnReceipt" class="w-full px-4 py-2 rounded-lg bg-emerald-600 text-white">Generate Kuitansi PDF</button></div>
+      </div>
     </div>
     <pre id="invResult" class="mt-4 bg-slate-100 p-3 rounded-lg text-xs overflow-auto"></pre>
 
@@ -83,6 +117,7 @@
     </div>
   </section>
 
+  <!-- MUKAFAAH -->
   <section id="mukafaah" class="panel card bg-white p-4 md:p-6 hidden">
     <h2 class="text-xl font-bold mb-3">Mukafaah Guru</h2>
     <div class="grid md:grid-cols-5 gap-3">
@@ -94,6 +129,7 @@
     <pre id="mkResult" class="mt-4 bg-slate-100 p-3 rounded-lg text-xs overflow-auto"></pre>
   </section>
 
+  <!-- PENGELUARAN -->
   <section id="expense" class="panel card bg-white p-4 md:p-6 hidden">
     <h2 class="text-xl font-bold mb-3">Pengeluaran</h2>
     <div class="grid md:grid-cols-6 gap-3">
@@ -114,66 +150,79 @@
     </div>
   </section>
 
-  <section id="cashbook" class="panel card bg-white p-4 md:p-6 hidden">
-    <h2 class="text-xl font-bold mb-3">Buku Kas</h2>
-    <div class="grid md:grid-cols-3 gap-3">
-      <div><label class="text-sm">Bulan</label><input id="cbMonth" type="month" class="w-full border rounded-lg p-2"></div>
-      <div class="flex items-end"><button id="btnCbLoad" class="w-full px-4 py-2 rounded-lg bg-slate-800 text-white">Hitung</button></div>
-      <div class="flex items-end"><button id="btnCbPdf" class="w-full px-4 py-2 rounded-lg bg-sky-600 text-white">Export PDF</button></div>
-    </div>
-    <pre id="cbResult" class="mt-4 bg-slate-100 p-3 rounded-lg text-xs overflow-auto"></pre>
-  </section>
-
+  <!-- SETTINGS -->
   <section id="settings" class="panel card bg-white p-4 md:p-6 hidden">
     <h2 class="text-xl font-bold mb-3">Settings</h2>
-    <div class="flex gap-2">
+    <div class="flex gap-2 items-end flex-wrap">
       <button id="btnMakeFolder" class="px-4 py-2 rounded-lg bg-sky-600 text-white">Buat Folder PDF</button>
+      <div>
+        <label class="text-sm">Drive LOGO_FILE_ID</label>
+        <input id="logoId" class="border rounded-lg p-2" placeholder="1AbcDEFg...">
+      </div>
+      <button id="btnSaveLogo" class="px-4 py-2 rounded-lg bg-slate-800 text-white">Simpan Logo</button>
       <span id="folderInfo" class="text-sm text-slate-500"></span>
     </div>
   </section>
 </div>
 
 <script>
-const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbza6sbX4ROUBM-crFRaXTGYFkWxZ7baW0ePC5pRIlqfBAjz9f1gOao48zQtRxQqnbKUTQ/exec";
+const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbza6sbX4ROUBM-crFRaXTGYFkWxZ7baW0ePC5pRIlqfBAjz9f1gOao48zQtRxQqnbKUTQ/exec"; // https://script.google.com/macros/s/xxxxx/exec
 
 function api(action, data={}){
-  return fetch(WEBAPP_URL+"?action="+encodeURIComponent(action), {
+  return fetch(WEBAPP_URL+"?action="+encodeURIComponent(action),{
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify(Object.assign({action}, data))
-  }).then(r=>r.json()).then(j=>{
-    if(!j.ok) throw new Error(j.error||'API error'); return j.data;
+  }).then(r=>{
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    return r.json();
+  }).then(j=>{
+    if(!j.ok) throw new Error(j.error||'API error');
+    return j.data;
   });
 }
 
 /* Tabs */
 document.querySelectorAll('.tab').forEach(b=>{
   b.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    b.classList.add('active');
     document.querySelectorAll('.panel').forEach(p=>p.classList.add('hidden'));
     document.getElementById(b.dataset.tab).classList.remove('hidden');
   });
 });
 
-/* Populate selects */
+/* Populate selects + dashboard */
 async function init(){
-  const [cls, std, tchs, cfg] = await Promise.all([
-    api('listClasses'), api('listStudents'), api('listTeachers'), api('getConfig')
+  // Cek koneksi cepat
+  await api('ping');
+
+  const [cls, std, tchs, cfg, attStats, payStats] = await Promise.all([
+    api('listClasses'), api('listStudents'), api('listTeachers'), api('getConfig'),
+    api('statsAttendance',{months:6}), api('statsPayments',{months:6})
   ]);
+
   fillSelect('attClass', cls, 'id','class_name');
   fillSelect('attFilterClass', cls, 'id','class_name', true);
   fillSelect('payClass', cls, 'id','class_name');
   fillSelect('recapClass', cls, 'id','class_name');
-
   fillSelect('attStudent', std, 'id','full_name');
   fillSelect('payStudent', std, 'id','full_name');
   fillSelect('invStudent', std, 'id','full_name');
-
   fillSelect('mkTeacher', tchs, 'id','full_name', true);
 
-  if (cfg && cfg.DRIVE_FOLDER_ID){
-    document.getElementById('folderInfo').textContent = 'Folder PDF: ' + cfg.DRIVE_FOLDER_ID;
-  }
+  if (cfg?.DRIVE_FOLDER_ID){ folderInfo.textContent = 'Folder PDF: ' + cfg.DRIVE_FOLDER_ID; }
+  if (cfg?.LOGO_FILE_ID){ logoId.value = cfg.LOGO_FILE_ID; }
+
+  renderAttChart(attStats);
+  renderPayChart(payStats);
+
+  // unpaid bulan ini
+  const now = new Date(), ym = now.toISOString().slice(0,7);
+  dashMonth.value = ym;
+  loadUnpaid(ym);
 }
+
 function fillSelect(id, arr, valKey, textKey, addAll){
   const el = document.getElementById(id);
   el.innerHTML = '';
@@ -182,85 +231,116 @@ function fillSelect(id, arr, valKey, textKey, addAll){
 }
 
 /* Attendance */
-document.getElementById('btnMarkAtt').onclick = async ()=>{
-  const payload = {
+btnMarkAtt.onclick = async ()=>{
+  await api('markAttendance', {
     class_id: attClass.value, student_id: attStudent.value, date: attDate.value,
     status: attStatus.value, note: attNote.value
-  };
-  await api('markAttendance', payload);
-  attNote.value='';
-  alert('Absensi tersimpan.');
+  });
+  attNote.value=''; alert('Absensi tersimpan.');
 };
-
-document.getElementById('btnLoadAtt').onclick = async ()=>{
+btnLoadAtt.onclick = async ()=>{
   const data = await api('getAttendance', { class_id: attFilterClass.value, month: attFilterMonth.value });
   renderTable('attTable', data, ['date','class_id','student_id','status','note']);
 };
 
 /* Payments */
-document.getElementById('btnPay').onclick = async ()=>{
-  const payload = {
+btnPay.onclick = async ()=>{
+  await api('recordPayment', {
     student_id: payStudent.value, class_id: payClass.value, month: payMonth.value,
     amount_jpy: Number(payAmount.value||0), package_months: Number(payPkg.value||1),
     note: payNote.value
-  };
-  await api('recordPayment', payload);
+  });
   payNote.value=''; alert('Pembayaran dicatat.');
 };
 
-/* Invoice */
-document.getElementById('btnCalcInv').onclick = async ()=>{
+/* Invoice & Receipt */
+btnCalcInv.onclick = async ()=>{
   const data = await api('calcInvoice', { student_id: invStudent.value, month: invMonth.value });
   invResult.textContent = JSON.stringify(data, null, 2);
 };
-
-document.getElementById('btnGenInv').onclick = async ()=>{
+btnGenInv.onclick = async ()=>{
   const res = await api('generateInvoicePdf', { student_id: invStudent.value, month: invMonth.value });
-  alert('PDF dibuat. Buka di Drive.\nFileId: '+res.fileId);
+  alert('PDF Invoice dibuat. FileId: '+res.fileId);
 };
-
-document.getElementById('btnRecapPdf').onclick = async ()=>{
+btnRecapPdf.onclick = async ()=>{
   const res = await api('classSppRecapPdf', { class_id: recapClass.value, month: recapMonth.value });
   alert('PDF rekap kelas dibuat. FileId: '+res.fileId);
 };
-
-/* Mukafaah */
-document.getElementById('btnCalcMk').onclick = async ()=>{
-  const data = await api('calcMukafaah', { month: mkMonth.value, teacher_id: mkTeacher.value || null });
-  mkResult.textContent = JSON.stringify(data, null, 2);
-};
-document.getElementById('btnMkPdf').onclick = async ()=>{
-  const res = await api('mukafaahPdf', { month: mkMonth.value, teacher_id: mkTeacher.value || null });
-  alert('PDF mukafaah dibuat. FileId: '+res.fileId);
+btnReceipt.onclick = async ()=>{
+  const months = rcMonths.value.split(',').map(s=>s.trim()).filter(Boolean);
+  const class_ids = rcClasses.value.split(',').map(s=>s.trim()).filter(Boolean);
+  const res = await api('generateReceiptPdf', { student_id: invStudent.value, months, class_ids });
+  alert('Kuitansi PDF dibuat. FileId: '+res.fileId);
 };
 
 /* Expenses */
-document.getElementById('btnExAdd').onclick = async ()=>{
+btnExAdd.onclick = async ()=>{
   await api('recordExpense', { date: exDate.value, category: exCat.value, amount_jpy: Number(exAmt.value||0), description: exDesc.value, note: exNote.value });
   exDesc.value=''; exNote.value='';
   alert('Pengeluaran dicatat.');
 };
-document.getElementById('btnExPdf').onclick = async ()=>{
+btnExPdf.onclick = async ()=>{
   const res = await api('expensesReportPdf', { month: exMonth.value });
   alert('PDF pengeluaran dibuat. FileId: '+res.fileId);
 };
 
-/* Cashbook */
-document.getElementById('btnCbLoad').onclick = async ()=>{
-  const r = await api('cashbook', { month: cbMonth.value });
-  cbResult.textContent = JSON.stringify(r, null, 2);
+/* Mukafaah */
+btnCalcMk.onclick = async ()=>{
+  const data = await api('calcMukafaah', { month: mkMonth.value, teacher_id: mkTeacher.value || null });
+  mkResult.textContent = JSON.stringify(data, null, 2);
 };
-document.getElementById('btnCbPdf').onclick = async ()=>{
-  const res = await api('cashbookPdf', { month: cbMonth.value });
-  alert('PDF Buku Kas dibuat. FileId: '+res.fileId);
+btnMkPdf.onclick = async ()=>{
+  const res = await api('mukafaahPdf', { month: mkMonth.value, teacher_id: mkTeacher.value || null });
+  alert('PDF mukafaah dibuat. FileId: '+res.fileId);
 };
 
 /* Settings */
-document.getElementById('btnMakeFolder').onclick = async ()=>{
+btnMakeFolder.onclick = async ()=>{
   const r = await api('createPdfFolder');
   folderInfo.textContent = 'Folder PDF: ' + r.folderId;
   alert('Folder PDF siap: '+r.folderId);
 };
+btnSaveLogo.onclick = async ()=>{
+  if (!logoId.value) return alert('Masukkan LOGO_FILE_ID dari Google Drive.');
+  await api('setLogoFileId', { fileId: logoId.value });
+  alert('Logo disimpan. Semua PDF akan menampilkan logo.');
+};
+
+/* Dashboard unpaid */
+async function loadUnpaid(ym){
+  const data = await api('unpaidByClass', { month: ym });
+  const wrap = document.getElementById('unpaidWrap');
+  wrap.innerHTML = '';
+  if (!data.length){ wrap.innerHTML = '<div class="text-sm text-slate-500">Semua sudah lunas bulan ini.</div>'; return; }
+  data.forEach(c=>{
+    const card = document.createElement('div');
+    card.className = 'p-4 card bg-white';
+    card.innerHTML = `<div class="font-semibold mb-2">${c.class_name}</div>` +
+      c.students.map(s=>`
+        <div class="flex items-center justify-between py-2 border-t">
+          <div>
+            <div class="font-medium">${s.student_name}</div>
+            <div class="text-xs text-slate-500">Sisa: ¥${s.due_jpy}</div>
+          </div>
+          <div class="flex gap-2">
+            <button class="px-3 py-1 rounded-lg bg-sky-600 text-white text-xs"
+              onclick="quickInvoice('${s.student_id}','${ym}')">Invoice</button>
+            <button class="px-3 py-1 rounded-lg bg-emerald-600 text-white text-xs"
+              onclick="quickReceipt('${s.student_id}','${ym}')">Cetak</button>
+          </div>
+        </div>`).join('');
+    wrap.append(card);
+  });
+}
+async function quickInvoice(student_id, month){
+  const r = await api('generateInvoicePdf', { student_id, month });
+  alert('Invoice dibuat. FileId: '+r.fileId);
+}
+async function quickReceipt(student_id, month){
+  const r = await api('generateReceiptPdf', { student_id, months:[month] });
+  alert('Kuitansi dibuat. FileId: '+r.fileId);
+}
+dashMonth.onchange = ()=> loadUnpaid(dashMonth.value);
 
 /* Utils */
 function renderTable(elId, rows, cols){
@@ -270,8 +350,30 @@ function renderTable(elId, rows, cols){
   const tbody = '<tbody>'+ rows.map(r=>'<tr>'+ cols.map(c=>`<td class="px-3 py-2 border-t">${r[c]??''}</td>`).join('') +'</tr>').join('') +'</tbody>';
   el.innerHTML = `<table class="min-w-full text-sm">${thead}${tbody}</table>`;
 }
+function renderAttChart(data){
+  const ctx = document.getElementById('attChart').getContext('2d');
+  const labels = data.map(x=>x.month);
+  new Chart(ctx, {
+    type:'line',
+    data:{ labels, datasets:[
+      {label:'Hadir', data:data.map(x=>x.present)},
+      {label:'Izin', data:data.map(x=>x.excused)},
+      {label:'Terlambat', data:data.map(x=>x.late)},
+      {label:'Alfa', data:data.map(x=>x.absent)}
+    ]},
+    options:{ responsive:true, maintainAspectRatio:false }
+  });
+}
+function renderPayChart(data){
+  const ctx = document.getElementById('payChart').getContext('2d');
+  new Chart(ctx, {
+    type:'bar',
+    data:{ labels: data.map(x=>x.month), datasets:[{label:'SPP Dibayar (JPY)', data:data.map(x=>x.total_jpy)}]},
+    options:{ responsive:true, maintainAspectRatio:false }
+  });
+}
 
-init().catch(e=>alert(e.message));
+init().catch(e=> alert('API error: '+e.message+'\nCek: 1) WebApp Anyone 2) URL benar 3) Options CORS'));
 </script>
 </body>
 </html>
