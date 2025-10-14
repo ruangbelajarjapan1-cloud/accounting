@@ -166,21 +166,17 @@
 </div>
 
 <script>
-const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbza6sbX4ROUBM-crFRaXTGYFkWxZ7baW0ePC5pRIlqfBAjz9f1gOao48zQtRxQqnbKUTQ/exec"; // https://script.google.com/macros/s/xxxxx/exec
+const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbza6sbX4ROUBM-crFRaXTGYFkWxZ7baW0ePC5pRIlqfBAjz9f1gOao48zQtRxQqnbKUTQ/exec"; // /exec
 
-function api(action, data={}){
-  return fetch(WEBAPP_URL+"?action="+encodeURIComponent(action),{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify(Object.assign({action}, data))
-  }).then(r=>{
-    if(!r.ok) throw new Error('HTTP '+r.status);
-    return r.json();
-  }).then(j=>{
-    if(!j.ok) throw new Error(j.error||'API error');
-    return j.data;
-  });
+function api(action, data = {}) {
+  // Hindari preflight: gunakan GET + querystring + tanpa header
+  const qs = new URLSearchParams({ action, ...Object.fromEntries(Object.entries(data).map(([k,v])=>[k, typeof v==='object'? JSON.stringify(v): v])) });
+  const url = `${WEBAPP_URL}?${qs.toString()}`;
+  return fetch(url, { method: 'GET', mode: 'cors', cache: 'no-cache' })
+    .then(r => r.json())
+    .then(j => { if (!j.ok) throw new Error(j.error || 'API error'); return j.data; });
 }
+
 
 /* Tabs */
 document.querySelectorAll('.tab').forEach(b=>{
