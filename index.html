@@ -15,7 +15,7 @@
   .brand{display:flex;align-items:center;gap:.75rem}
   .brand .dot{width:12px;height:12px;border-radius:9999px;background:linear-gradient(135deg,#34d399,#06b6d4)}
   .nav{display:flex;gap:.5rem;flex-wrap:wrap}
-  .tab{background:var(--glass);border:1px solid rgba(255,255,255,.08);backdrop-filter:blur(8px);padding:.6rem 1rem;border-radius:12px;color:#cbd5e1}
+  .tab{background:var(--glass);border:1px solid rgba(255,255,255,.08);backdrop-filter:blur(8px);padding:.6rem 1rem;border-radius:12px;color:#cbd5e1;transition:.15s}
   .tab.active{background:linear-gradient(135deg,#22d3ee,#6366f1);color:#0b1220;font-weight:700}
   .grid{display:grid;gap:16px}
   .cards{grid-template-columns:repeat(4,minmax(0,1fr))}
@@ -34,6 +34,8 @@
   thead th{color:#93c5fd;border-bottom:1px solid rgba(255,255,255,.2);text-align:left}
   tbody td{border-top:1px solid rgba(255,255,255,.08);color:#e5e7eb}
   .divider{height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);margin:12px 0}
+  /* grafik stabil */
+  .chart-box{position:relative;height:260px;width:100%}
   @media (max-width: 980px){ .cards{grid-template-columns:repeat(2,minmax(0,1fr))} .panes{grid-template-columns:1fr} }
   @media (max-width: 560px){ .cards{grid-template-columns:1fr} }
 </style>
@@ -60,7 +62,7 @@
       </nav>
     </header>
 
-    <!-- ================= DASHBOARD ================= -->
+    <!-- DASHBOARD -->
     <section id="home" class="panel space-y-4">
       <div class="grid cards">
         <div class="tile"><div>👥</div><div><div class="text-slate-300 text-sm">Total Siswa</div><div id="statStudents" class="text-2xl font-bold">0</div><div class="text-xs text-slate-400">dari bulan lalu</div></div></div>
@@ -96,16 +98,16 @@
             <div class="font-semibold">Grafik Absensi (6 bulan)</div>
             <input id="dashMonth" type="month" class="field" style="width:auto">
           </div>
-          <canvas id="attChart" height="160" class="mt-3"></canvas>
+          <div class="chart-box"><canvas id="attChart"></canvas></div>
         </div>
         <div class="card">
           <div class="font-semibold">Grafik Pembayaran (6 bulan)</div>
-          <canvas id="payChart" height="160" class="mt-3"></canvas>
+          <div class="chart-box"><canvas id="payChart"></canvas></div>
         </div>
       </div>
     </section>
 
-    <!-- ================= ABSENSI ================= -->
+    <!-- ABSENSI -->
     <section id="attendance" class="panel hidden">
       <div class="card">
         <div class="text-xl font-bold mb-3">Absensi Kelas</div>
@@ -131,7 +133,7 @@
       </div>
     </section>
 
-    <!-- ================= PEMBAYARAN ================= -->
+    <!-- PEMBAYARAN -->
     <section id="spp" class="panel hidden">
       <div class="card">
         <div class="text-xl font-bold mb-3">Pembayaran SPP</div>
@@ -149,7 +151,7 @@
       </div>
     </section>
 
-    <!-- ================= INVOICE ================= -->
+    <!-- INVOICE -->
     <section id="invoice" class="panel hidden">
       <div class="card">
         <div class="text-xl font-bold mb-3">Invoice</div>
@@ -172,7 +174,7 @@
       </div>
     </section>
 
-    <!-- ================= KUITANSI ================= -->
+    <!-- KUITANSI -->
     <section id="receipt" class="panel hidden">
       <div class="card">
         <div class="text-xl font-bold mb-3">Kuitansi</div>
@@ -188,7 +190,7 @@
       </div>
     </section>
 
-    <!-- ================= MUKAFAAH ================= -->
+    <!-- MUKAFAAH -->
     <section id="mukafaah" class="panel hidden">
       <div class="card">
         <div class="text-xl font-bold mb-3">Mukafaah Guru</div>
@@ -202,7 +204,7 @@
       </div>
     </section>
 
-    <!-- ================= PENGELUARAN ================= -->
+    <!-- PENGELUARAN -->
     <section id="expense" class="panel hidden">
       <div class="card">
         <div class="text-xl font-bold mb-3">Pengeluaran</div>
@@ -224,11 +226,11 @@
       </div>
     </section>
 
-    <!-- ================= SETTINGS ================= -->
+    <!-- SETTINGS -->
     <section id="settings" class="panel hidden">
       <div class="card">
         <div class="text-xl font-bold mb-3">Settings</div>
-        <div class="text-slate-300 text-sm">Logo & folder sudah di-hardcode. Klik tombol di bawah untuk melihat ID yang dipakai.</div>
+        <div class="text-slate-300 text-sm">Logo & folder sudah di-hardcode di Apps Script.</div>
         <div class="mt-3"><button id="btnShowBrand" class="btn dark">Tampilkan ID Logo & Folder</button></div>
         <pre id="brandInfo" class="mt-3" style="background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px;max-height:220px;overflow:auto"></pre>
       </div>
@@ -271,7 +273,7 @@ document.querySelectorAll('.tab').forEach(b=>{
 
 /* ============== Init ============== */
 async function init(){
-  await api('ping'); // koneksi
+  await api('ping');
 
   const [cls,std,tchs,counts,attStats,payStats,tdy] = await Promise.all([
     api('listClasses'), api('listStudents'), api('listTeachers'),
@@ -288,7 +290,6 @@ async function init(){
   fillSelect('attStudent', std,'id','full_name');
   fillSelect('mkTeacher', tchs,'id','full_name',true);
 
-  // counts
   statStudents.textContent = counts.students ?? 0;
   statTeachers.textContent = counts.teachers ?? 0;
   statClasses.textContent  = counts.classes ?? 0;
@@ -296,22 +297,15 @@ async function init(){
   sppUnpaid.textContent = counts.spp?.unpaid ?? 0;
   sppPaid.textContent   = counts.spp?.paid ?? 0;
 
-  // today schedule
   labelToday.textContent = tdy.day || '—';
-  if (tdy.classes?.length){
-    todayList.innerHTML = tdy.classes.map(c=>`
-      <div class="flex items-center justify-between" style="border-top:1px dashed rgba(255,255,255,.12);padding:8px 0">
-        <div>${c.class_name}</div><div class="text-sm" style="color:#93c5fd">${c.time||''}</div>
-      </div>`).join('');
-  }else{
-    todayList.textContent = 'Tidak ada jadwal hari ini.';
-  }
+  todayList.innerHTML = (tdy.classes?.length)
+    ? tdy.classes.map(c=>`<div class="flex items-center justify-between" style="border-top:1px dashed rgba(255,255,255,.12);padding:8px 0"><div>${c.class_name}</div><div class="text-sm" style="color:#93c5fd">${c.time||''}</div></div>`).join('')
+    : 'Tidak ada jadwal hari ini.';
 
   renderAttChart(attStats||[]);
   renderPayChart(payStats||[]);
 
-  const now = new Date(), ym = now.toISOString().slice(0,7);
-  dashMonth.value = ym;
+  dashMonth.value = new Date().toISOString().slice(0,7);
 }
 
 function fillSelect(id, arr, val, text, addAll){
@@ -394,29 +388,59 @@ btnShowBrand?.addEventListener('click', async ()=>{
   brandInfo.textContent = JSON.stringify(r, null, 2);
 });
 
-/* ===== Charts ===== */
+/* ===== Grafik stabil ===== */
+let CH_ATT=null, CH_PAY=null;
+function makeLineChart(ctx, labels, datasets){
+  if (!ctx) return;
+  return new Chart(ctx, {
+    type:'line',
+    data:{ labels, datasets },
+    options:{
+      responsive:true, maintainAspectRatio:false, resizeDelay:200,
+      animation:{ duration:0 },
+      plugins:{ legend:{ labels:{ color:'#cbd5e1' }}, tooltip:{ intersect:false, mode:'index' } },
+      scales:{
+        x:{ ticks:{ color:'#9ca3af' }, grid:{ color:'rgba(148,163,184,.15)' } },
+        y:{ ticks:{ color:'#9ca3af' }, grid:{ color:'rgba(148,163,184,.15)' }, beginAtZero:true }
+      }
+    }
+  });
+}
+function makeBarChart(ctx, labels, data){
+  if (!ctx) return;
+  return new Chart(ctx, {
+    type:'bar',
+    data:{ labels, datasets:[{ label:'SPP (JPY)', data }] },
+    options:{
+      responsive:true, maintainAspectRatio:false, resizeDelay:200,
+      animation:{ duration:0 },
+      plugins:{ legend:{ display:false }, tooltip:{ intersect:false, mode:'index' } },
+      scales:{
+        x:{ ticks:{ color:'#9ca3af' }, grid:{ display:false } },
+        y:{ ticks:{ color:'#9ca3af' }, grid:{ color:'rgba(148,163,184,.15)' }, beginAtZero:true }
+      }
+    }
+  });
+}
 function renderAttChart(data){
   const labels = data.map(x=>x.month);
-  new Chart(document.getElementById('attChart'),{
-    type:'line',
-    data:{ labels, datasets:[
-      {label:'Hadir', data:data.map(x=>x.present)},
-      {label:'Izin',  data:data.map(x=>x.excused)},
-      {label:'Telat', data:data.map(x=>x.late)},
-      {label:'Alfa',  data:data.map(x=>x.absent)}
-    ]},
-    options:{ responsive:true, maintainAspectRatio:false }
-  });
+  const datasets = [
+    { label:'Hadir',  data:data.map(x=>x.present) },
+    { label:'Izin',   data:data.map(x=>x.excused) },
+    { label:'Telat',  data:data.map(x=>x.late) },
+    { label:'Alfa',   data:data.map(x=>x.absent) },
+  ];
+  if (CH_ATT) { CH_ATT.destroy(); CH_ATT=null; }
+  CH_ATT = makeLineChart(document.getElementById('attChart'), labels, datasets);
 }
 function renderPayChart(data){
-  new Chart(document.getElementById('payChart'),{
-    type:'bar',
-    data:{ labels:data.map(x=>x.month), datasets:[{label:'SPP (JPY)', data:data.map(x=>x.total_jpy)}] },
-    options:{ responsive:true, maintainAspectRatio:false }
-  });
+  const labels = data.map(x=>x.month);
+  const vals   = data.map(x=>x.total_jpy);
+  if (CH_PAY) { CH_PAY.destroy(); CH_PAY=null; }
+  CH_PAY = makeBarChart(document.getElementById('payChart'), labels, vals);
 }
 
-init().catch(e=> alert('API error: '+e.message+'\nCek: URL /exec & deployment Anyone'));
+init().catch(e=> alert('API error: '+e.message+'\nCek: URL /exec & deploy Anyone'));
 </script>
 </body>
 </html>
