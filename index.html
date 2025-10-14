@@ -8,246 +8,250 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
-  :root { --card:#ffffff; --ink:#0f172a; }
-  body{font-family:Inter,system-ui,Segoe UI,Arial;background:#f6f7fb;color:var(--ink)}
-  .card{background:var(--card);border-radius:14px;box-shadow:0 8px 20px rgba(15,23,42,.05)}
-  .tile{display:flex;gap:.75rem;align-items:flex-start;padding:1rem;border-radius:14px;background:#fff;box-shadow:0 6px 16px rgba(0,0,0,.05)}
-  .tab.active{background:#0ea5e9;color:#fff}
-  .pill{font-size:.75rem;padding:.25rem .5rem;border-radius:.5rem}
+  :root { --bg:#0f172a; --muted:#64748b; --card:#0b1220; --accent:#0ea5e9; --glass:rgba(255,255,255,.06); }
+  html,body{height:100%}
+  body{font-family:Inter,system-ui,Segoe UI,Arial;background:linear-gradient(180deg,#0b1220 0%,#111827 40%,#0b1220 100%);color:#e5e7eb}
+  .shell{max-width:1200px;margin:0 auto;padding:24px}
+  .brand{display:flex;align-items:center;gap:.75rem}
+  .brand .dot{width:12px;height:12px;border-radius:9999px;background:linear-gradient(135deg,#34d399,#06b6d4)}
+  .nav{display:flex;gap:.5rem;flex-wrap:wrap}
+  .tab{background:var(--glass);border:1px solid rgba(255,255,255,.08);backdrop-filter:blur(8px);padding:.6rem 1rem;border-radius:12px;color:#cbd5e1}
+  .tab.active{background:linear-gradient(135deg,#22d3ee,#6366f1);color:#0b1220;font-weight:700}
+  .grid{display:grid;gap:16px}
+  .cards{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .panes{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .card{background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(8px);border-radius:16px;padding:16px}
+  .tile{display:flex;gap:12px;align-items:flex-start;background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:16px}
+  .pill{font-size:.75rem;padding:.25rem .5rem;border-radius:999px;background:rgba(255,255,255,.08)}
+  .btn{padding:.6rem 1rem;border-radius:12px;background:#0ea5e9;color:#0b1220;font-weight:700}
+  .btn.dark{background:#111827;color:#e5e7eb;border:1px solid rgba(255,255,255,.12)}
+  .btn.green{background:#22c55e}
+  .btn.indigo{background:#6366f1}
+  .field{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:.55rem .75rem;color:#e5e7eb;width:100%}
+  .label{font-size:.85rem;color:#94a3b8;margin-bottom:.25rem;display:block}
+  table{width:100%;border-collapse:collapse}
+  th,td{padding:10px 12px;font-size:.9rem}
+  thead th{color:#93c5fd;border-bottom:1px solid rgba(255,255,255,.2);text-align:left}
+  tbody td{border-top:1px solid rgba(255,255,255,.08);color:#e5e7eb}
+  .divider{height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);margin:12px 0}
+  @media (max-width: 980px){ .cards{grid-template-columns:repeat(2,minmax(0,1fr))} .panes{grid-template-columns:1fr} }
+  @media (max-width: 560px){ .cards{grid-template-columns:1fr} }
 </style>
 </head>
 <body>
-<div class="max-w-7xl mx-auto p-4 md:p-8">
-  <header class="mb-6">
-    <h1 class="text-3xl font-extrabold">Dashboard</h1>
-    <p class="text-slate-500">Sistem Manajemen RBMJ Jepang</p>
-    <div class="mt-4 flex gap-2 flex-wrap">
-      <button class="tab px-4 py-2 rounded-xl card active" data-tab="home">Dashboard</button>
-      <button class="tab px-4 py-2 rounded-xl card" data-tab="attendance">Absensi</button>
-      <button class="tab px-4 py-2 rounded-xl card" data-tab="spp">Pembayaran</button>
-      <button class="tab px-4 py-2 rounded-xl card" data-tab="invoice">Invoice</button>
-      <button class="tab px-4 py-2 rounded-xl card" data-tab="receipt">Kuitansi</button>
-      <button class="tab px-4 py-2 rounded-xl card" data-tab="mukafaah">Mukafaah</button>
-      <button class="tab px-4 py-2 rounded-xl card" data-tab="expense">Pengeluaran</button>
-      <button class="tab px-4 py-2 rounded-xl card" data-tab="settings">Settings</button>
-    </div>
-  </header>
-
-  <!-- ======= HOME ======= -->
-  <section id="home" class="panel space-y-6">
-    <div class="grid md:grid-cols-4 gap-4">
-      <div class="tile">
-        <div class="text-slate-400">👥</div>
-        <div><div class="text-sm text-slate-500">Total Siswa</div><div id="statStudents" class="text-2xl font-bold">0</div><div class="text-xs text-slate-400">dari bulan lalu</div></div>
-      </div>
-      <div class="tile">
-        <div class="text-slate-400">🧑‍🏫</div>
-        <div><div class="text-sm text-slate-500">Total Guru</div><div id="statTeachers" class="text-2xl font-bold">0</div><div class="text-xs text-slate-400">dari bulan lalu</div></div>
-      </div>
-      <div class="tile">
-        <div class="text-slate-400">📘</div>
-        <div><div class="text-sm text-slate-500">Total Kelas</div><div id="statClasses" class="text-2xl font-bold">0</div><div class="text-xs text-slate-400">dari bulan lalu</div></div>
-      </div>
-      <div class="tile">
-        <div class="text-slate-400">💴</div>
-        <div><div class="text-sm text-slate-500">Pemasukan Bulan Ini</div><div id="statIncome" class="text-2xl font-bold">¥0</div><div class="text-xs text-green-600">0% dari bulan lalu</div></div>
-      </div>
-    </div>
-
-    <div class="grid md:grid-cols-2 gap-4">
-      <div class="card p-4">
-        <div class="flex items-center justify-between mb-2">
-          <div class="font-semibold">Jadwal Hari Ini</div>
-          <span id="labelToday" class="pill bg-slate-100 text-slate-600">—</span>
-        </div>
-        <div id="todayList" class="text-sm text-slate-600">Kelas yang dijadwalkan hari ini</div>
-      </div>
-      <div class="card p-4">
-        <div class="font-semibold mb-2">Status Pembayaran SPP</div>
-        <div class="flex items-center justify-between bg-slate-50 p-3 rounded-lg">
-          <div><div class="font-semibold">Belum Bayar</div><div class="text-xs text-slate-500">bulan ini</div></div>
-          <div class="flex items-center gap-3"><span id="sppUnpaid" class="text-xl font-bold">0</span><span class="pill bg-rose-600 text-white">Menunggu</span></div>
-        </div>
-        <div class="flex items-center justify-between bg-slate-50 p-3 rounded-lg mt-3">
-          <div><div class="font-semibold">Sudah Bayar</div><div class="text-xs text-slate-500">bulan ini</div></div>
-          <div class="flex items-center gap-3"><span id="sppPaid" class="text-xl font-bold">0</span><span class="pill bg-black text-white">Lunas</span></div>
-        </div>
-        <div class="mt-3"><button class="w-full px-4 py-2 rounded-lg bg-slate-900 text-white text-sm" onclick="document.querySelector('[data-tab=invoice]').click()">Lihat Detail Pembayaran</button></div>
-      </div>
-    </div>
-
-    <div class="grid md:grid-cols-2 gap-4">
-      <div class="card p-4">
-        <div class="flex items-center justify-between"><div class="font-semibold">Grafik Absensi (6 bulan)</div><input id="dashMonth" type="month" class="border rounded-lg p-1 text-sm"></div>
-        <canvas id="attChart" height="160" class="mt-3"></canvas>
-      </div>
-      <div class="card p-4">
-        <div class="font-semibold">Grafik Pembayaran (6 bulan)</div>
-        <canvas id="payChart" height="160" class="mt-3"></canvas>
-      </div>
-    </div>
-
-    <div class="card p-4">
-      <div class="font-semibold mb-2">Aktivitas Terkini</div>
-      <div class="text-sm text-slate-500">Belum ada aktivitas terkini</div>
-    </div>
-  </section>
-
-  <!-- ======= ABSENSI ======= -->
-  <section id="attendance" class="panel hidden">
-    <div class="card p-4">
-      <div class="text-xl font-bold mb-3">Absensi Kelas</div>
-      <div class="grid md:grid-cols-4 gap-3 items-end">
-        <div><label class="text-sm">Kelas</label><select id="attClass" class="w-full border rounded-lg p-2"></select></div>
-        <div><label class="text-sm">Siswa</label><select id="attStudent" class="w-full border rounded-lg p-2"></select></div>
-        <div><label class="text-sm">Tanggal</label><input id="attDate" type="date" class="w-full border rounded-lg p-2"></div>
-        <div><label class="text-sm">Status</label>
-          <select id="attStatus" class="w-full border rounded-lg p-2">
-            <option>Present</option><option>Absent</option><option>Late</option><option>Excused</option>
-          </select>
-        </div>
-        <div class="md:col-span-4 flex gap-2">
-          <input id="attNote" placeholder="Catatan (opsional)" class="flex-1 border rounded-lg p-2">
-          <button id="btnMarkAtt" class="px-4 py-2 rounded-lg bg-sky-600 text-white">Simpan</button>
+  <div class="shell">
+    <header class="flex items-center justify-between mb-6">
+      <div class="brand">
+        <div class="dot"></div>
+        <div>
+          <div class="text-2xl font-extrabold tracking-tight">RBMJ — Sistem Manajemen</div>
+          <div class="text-sm text-slate-400">Ruang Belajar Muslim Jepang</div>
         </div>
       </div>
-      <hr class="my-4">
-      <div class="grid md:grid-cols-3 gap-3">
-        <div><label class="text-sm">Filter Kelas</label><select id="attFilterClass" class="w-full border rounded-lg p-2"></select></div>
-        <div><label class="text-sm">Bulan</label><input id="attFilterMonth" type="month" class="w-full border rounded-lg p-2"></div>
-        <div class="flex items-end"><button id="btnLoadAtt" class="px-4 py-2 rounded-lg bg-slate-900 text-white w-full">Muat Rekap</button></div>
-      </div>
-      <div id="attTable" class="mt-4 overflow-auto"></div>
-    </div>
-  </section>
+      <nav class="nav">
+        <button class="tab active" data-tab="home">Dashboard</button>
+        <button class="tab" data-tab="attendance">Absensi</button>
+        <button class="tab" data-tab="spp">Pembayaran</button>
+        <button class="tab" data-tab="invoice">Invoice</button>
+        <button class="tab" data-tab="receipt">Kuitansi</button>
+        <button class="tab" data-tab="mukafaah">Mukafaah</button>
+        <button class="tab" data-tab="expense">Pengeluaran</button>
+        <button class="tab" data-tab="settings">Settings</button>
+      </nav>
+    </header>
 
-  <!-- ======= PEMBAYARAN ======= -->
-  <section id="spp" class="panel hidden">
-    <div class="card p-4">
-      <div class="text-xl font-bold mb-3">Pembayaran SPP</div>
-      <div class="grid md:grid-cols-6 gap-3">
-        <div class="md:col-span-2"><label class="text-sm">Siswa</label><select id="payStudent" class="w-full border rounded-lg p-2"></select></div>
-        <div><label class="text-sm">Kelas</label><select id="payClass" class="w-full border rounded-lg p-2"></select></div>
-        <div><label class="text-sm">Bulan</label><input id="payMonth" type="month" class="w-full border rounded-lg p-2"></div>
-        <div><label class="text-sm">Jumlah (JPY)</label><input id="payAmount" type="number" class="w-full border rounded-lg p-2"></div>
-        <div><label class="text-sm">Paket (bulan)</label><input id="payPkg" type="number" value="1" min="1" class="w-full border rounded-lg p-2"></div>
-        <div class="md:col-span-6 flex gap-2">
-          <input id="payNote" placeholder="Catatan" class="flex-1 border rounded-lg p-2">
-          <button id="btnPay" class="px-4 py-2 rounded-lg bg-green-600 text-white">Catat Pembayaran</button>
+    <!-- ================= DASHBOARD ================= -->
+    <section id="home" class="panel space-y-4">
+      <div class="grid cards">
+        <div class="tile"><div>👥</div><div><div class="text-slate-300 text-sm">Total Siswa</div><div id="statStudents" class="text-2xl font-bold">0</div><div class="text-xs text-slate-400">dari bulan lalu</div></div></div>
+        <div class="tile"><div>🧑‍🏫</div><div><div class="text-slate-300 text-sm">Total Guru</div><div id="statTeachers" class="text-2xl font-bold">0</div><div class="text-xs text-slate-400">dari bulan lalu</div></div></div>
+        <div class="tile"><div>📘</div><div><div class="text-slate-300 text-sm">Total Kelas</div><div id="statClasses" class="text-2xl font-bold">0</div><div class="text-xs text-slate-400">dari bulan lalu</div></div></div>
+        <div class="tile"><div>💴</div><div><div class="text-slate-300 text-sm">Pemasukan Bulan Ini</div><div id="statIncome" class="text-2xl font-bold">¥0</div><div class="text-xs text-emerald-400">0% dari bulan lalu</div></div></div>
+      </div>
+
+      <div class="grid panes">
+        <div class="card">
+          <div class="flex items-center justify-between mb-2">
+            <div class="font-semibold">Jadwal Hari Ini</div>
+            <span id="labelToday" class="pill">—</span>
+          </div>
+          <div id="todayList" class="text-sm text-slate-300">Kelas yang dijadwalkan hari ini</div>
+        </div>
+        <div class="card">
+          <div class="font-semibold mb-2">Status Pembayaran SPP</div>
+          <div class="grid" style="grid-template-columns:1fr auto;gap:8px;align-items:center">
+            <div><div class="font-semibold">Belum Bayar</div><div class="text-xs text-slate-400">bulan ini</div></div>
+            <div class="pill" style="background:#ef4444;color:#fff"><span id="sppUnpaid" class="font-bold">0</span></div>
+            <div><div class="font-semibold">Sudah Bayar</div><div class="text-xs text-slate-400">bulan ini</div></div>
+            <div class="pill" style="background:#111827;border:1px solid rgba(255,255,255,.2)"><span id="sppPaid" class="font-bold">0</span></div>
+          </div>
+          <div class="divider"></div>
+          <button class="btn dark w-full" onclick="document.querySelector('[data-tab=invoice]').click()">Lihat Detail Pembayaran</button>
         </div>
       </div>
-    </div>
-  </section>
 
-  <!-- ======= INVOICE ======= -->
-  <section id="invoice" class="panel hidden">
-    <div class="card p-4 space-y-6">
-      <div class="text-xl font-bold">Invoice</div>
-      <div class="grid md:grid-cols-6 gap-3">
-        <div class="md:col-span-2"><label class="text-sm">Siswa</label><select id="invStudent" class="w-full border rounded-lg p-2"></select></div>
-        <div><label class="text-sm">Bulan</label><input id="invMonth" type="month" class="w-full border rounded-lg p-2"></div>
-        <div class="flex items-end"><button id="btnCalcInv" class="w-full px-4 py-2 rounded-lg bg-slate-900 text-white">Hitung</button></div>
-        <div class="flex items-end"><button id="btnGenInv" class="w-full px-4 py-2 rounded-lg bg-sky-600 text-white">Generate Invoice (1 bulan)</button></div>
-      </div>
-
-      <div class="grid md:grid-cols-3 gap-3">
-        <div><label class="text-sm">Bulan (multi, koma)</label><input id="ibMonths" placeholder="2025-01,2025-02" class="w-full border rounded-lg p-2"></div>
-        <div><label class="text-sm">Kelas (opsional, koma)</label><input id="ibClasses" placeholder="CLASS001,CLASS002" class="w-full border rounded-lg p-2"></div>
-        <div class="flex items-end"><button id="btnInvBundle" class="w-full px-4 py-2 rounded-lg bg-emerald-600 text-white">Generate Invoice Bundle</button></div>
-      </div>
-
-      <pre id="invResult" class="bg-slate-100 p-3 rounded-lg text-xs overflow-auto"></pre>
-    </div>
-  </section>
-
-  <!-- ======= KUITANSI ======= -->
-  <section id="receipt" class="panel hidden">
-    <div class="card p-4 space-y-6">
-      <div class="text-xl font-bold">Kuitansi</div>
-      <div class="grid md:grid-cols-3 gap-3">
-        <div><label class="text-sm">Siswa</label><select id="rcStudent" class="w-full border rounded-lg p-2"></select></div>
-        <div><label class="text-sm">Bulan (multi, koma)</label><input id="rcMonths" placeholder="2025-01,2025-02" class="w-full border rounded-lg p-2"></div>
-        <div><label class="text-sm">Kelas (opsional, koma)</label><input id="rcClasses" placeholder="CLASS001,CLASS002" class="w-full border rounded-lg p-2"></div>
-        <div class="md:col-span-3 flex justify-end">
-          <button id="btnReceipt" class="px-4 py-2 rounded-lg bg-indigo-600 text-white">Generate Kuitansi</button>
+      <div class="grid panes">
+        <div class="card">
+          <div class="flex items-center justify-between">
+            <div class="font-semibold">Grafik Absensi (6 bulan)</div>
+            <input id="dashMonth" type="month" class="field" style="width:auto">
+          </div>
+          <canvas id="attChart" height="160" class="mt-3"></canvas>
+        </div>
+        <div class="card">
+          <div class="font-semibold">Grafik Pembayaran (6 bulan)</div>
+          <canvas id="payChart" height="160" class="mt-3"></canvas>
         </div>
       </div>
-      <div class="text-sm text-slate-500">• 1 kelas? isi 1 class_id • Multi kelas? pisahkan koma • Multi bulan? pisahkan koma. PDF otomatis tersimpan di Google Drive (RBMJ_PDF).</div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ======= MUKAFAAH ======= -->
-  <section id="mukafaah" class="panel hidden">
-    <div class="card p-4">
-      <div class="text-xl font-bold mb-3">Mukafaah Guru</div>
-      <div class="grid md:grid-cols-5 gap-3">
-        <div><label class="text-sm">Bulan</label><input id="mkMonth" type="month" class="w-full border rounded-lg p-2"></div>
-        <div><label class="text-sm">Guru (opsional)</label><select id="mkTeacher" class="w-full border rounded-lg p-2"></select></div>
-        <div class="flex items-end"><button id="btnCalcMk" class="w-full px-4 py-2 rounded-lg bg-slate-900 text-white">Hitung</button></div>
-        <div class="flex items-end"><button id="btnMkPdf" class="w-full px-4 py-2 rounded-lg bg-sky-600 text-white">Export PDF</button></div>
+    <!-- ================= ABSENSI ================= -->
+    <section id="attendance" class="panel hidden">
+      <div class="card">
+        <div class="text-xl font-bold mb-3">Absensi Kelas</div>
+        <div class="grid" style="grid-template-columns:repeat(4,minmax(0,1fr));gap:12px">
+          <div><label class="label">Kelas</label><select id="attClass" class="field"></select></div>
+          <div><label class="label">Siswa</label><select id="attStudent" class="field"></select></div>
+          <div><label class="label">Tanggal</label><input id="attDate" type="date" class="field"></div>
+          <div><label class="label">Status</label>
+            <select id="attStatus" class="field"><option>Present</option><option>Absent</option><option>Late</option><option>Excused</option></select>
+          </div>
+          <div style="grid-column:1/-1;display:flex;gap:8px">
+            <input id="attNote" placeholder="Catatan (opsional)" class="field" style="flex:1">
+            <button id="btnMarkAtt" class="btn">Simpan</button>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="grid" style="grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">
+          <div><label class="label">Filter Kelas</label><select id="attFilterClass" class="field"></select></div>
+          <div><label class="label">Bulan</label><input id="attFilterMonth" type="month" class="field"></div>
+          <div style="display:flex;align-items:end"><button id="btnLoadAtt" class="btn dark w-full">Muat Rekap</button></div>
+        </div>
+        <div id="attTable" class="mt-3 overflow-auto"></div>
       </div>
-      <pre id="mkResult" class="mt-4 bg-slate-100 p-3 rounded-lg text-xs overflow-auto"></pre>
-    </div>
-  </section>
+    </section>
 
-  <!-- ======= PENGELUARAN ======= -->
-  <section id="expense" class="panel hidden">
-    <div class="card p-4">
-      <div class="text-xl font-bold mb-3">Pengeluaran</div>
-      <div class="grid md:grid-cols-6 gap-3">
-        <div><label class="text-sm">Tanggal</label><input id="exDate" type="date" class="w-full border rounded-lg p-2"></div>
-        <div><label class="text-sm">Kategori</label><input id="exCat" class="w-full border rounded-lg p-2" placeholder="Sewa, Listrik, ..."></div>
-        <div><label class="text-sm">Jumlah (JPY)</label><input id="exAmt" type="number" class="w-full border rounded-lg p-2"></div>
-        <div class="md:col-span-3"><label class="text-sm">Deskripsi</label><input id="exDesc" class="w-full border rounded-lg p-2"></div>
-        <div class="md:col-span-6 flex gap-2">
-          <input id="exNote" placeholder="Catatan (opsional)" class="flex-1 border rounded-lg p-2">
-          <button id="btnExAdd" class="px-4 py-2 rounded-lg bg-green-600 text-white">Simpan</button>
+    <!-- ================= PEMBAYARAN ================= -->
+    <section id="spp" class="panel hidden">
+      <div class="card">
+        <div class="text-xl font-bold mb-3">Pembayaran SPP</div>
+        <div class="grid" style="grid-template-columns:repeat(6,minmax(0,1fr));gap:12px">
+          <div style="grid-column:span 2"><label class="label">Siswa</label><select id="payStudent" class="field"></select></div>
+          <div><label class="label">Kelas</label><select id="payClass" class="field"></select></div>
+          <div><label class="label">Bulan</label><input id="payMonth" type="month" class="field"></div>
+          <div><label class="label">Jumlah (JPY)</label><input id="payAmount" type="number" class="field"></div>
+          <div><label class="label">Paket (bulan)</label><input id="payPkg" type="number" value="1" min="1" class="field"></div>
+          <div style="grid-column:1/-1;display:flex;gap:8px">
+            <input id="payNote" class="field" placeholder="Catatan" style="flex:1">
+            <button id="btnPay" class="btn green">Catat Pembayaran</button>
+          </div>
         </div>
       </div>
-      <hr class="my-6">
-      <div class="font-semibold mb-2">Rekap & PDF</div>
-      <div class="grid md:grid-cols-3 gap-3">
-        <div><label class="text-sm">Bulan</label><input id="exMonth" type="month" class="w-full border rounded-lg p-2"></div>
-        <div class="flex items-end"><button id="btnExPdf" class="w-full px-4 py-2 rounded-lg bg-sky-600 text-white">Export PDF</button></div>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ======= SETTINGS ======= -->
-  <section id="settings" class="panel hidden">
-    <div class="card p-4">
-      <div class="text-xl font-bold mb-3">Settings</div>
-      <div class="flex gap-2 items-end flex-wrap">
-        <button id="btnMakeFolder" class="px-4 py-2 rounded-lg bg-sky-600 text-white">Buat Folder PDF</button>
-        <div><label class="text-sm">Drive LOGO_FILE_ID</label><input id="logoId" class="border rounded-lg p-2" placeholder="1AbcDEFg..."></div>
-        <button id="btnSaveLogo" class="px-4 py-2 rounded-lg bg-slate-900 text-white">Simpan Logo</button>
-        <span id="folderInfo" class="text-sm text-slate-500"></span>
+    <!-- ================= INVOICE ================= -->
+    <section id="invoice" class="panel hidden">
+      <div class="card">
+        <div class="text-xl font-bold mb-3">Invoice</div>
+        <div class="grid" style="grid-template-columns:repeat(6,minmax(0,1fr));gap:12px">
+          <div style="grid-column:span 2"><label class="label">Siswa</label><select id="invStudent" class="field"></select></div>
+          <div><label class="label">Bulan</label><input id="invMonth" type="month" class="field"></div>
+          <div style="display:flex;align-items:end"><button id="btnCalcInv" class="btn dark w-full">Hitung</button></div>
+          <div style="display:flex;align-items:end"><button id="btnGenInv" class="btn w-full">Generate Invoice (1 bulan)</button></div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="grid" style="grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">
+          <div><label class="label">Bulan (multi, koma)</label><input id="ibMonths" placeholder="2025-01,2025-02" class="field"></div>
+          <div><label class="label">Kelas (opsional, koma)</label><input id="ibClasses" placeholder="CLASS001,CLASS002" class="field"></div>
+          <div style="display:flex;align-items:end"><button id="btnInvBundle" class="btn green w-full">Generate Invoice Bundle</button></div>
+        </div>
+
+        <pre id="invResult" class="mt-3" style="background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px;max-height:220px;overflow:auto"></pre>
       </div>
-    </div>
-  </section>
-</div>
+    </section>
+
+    <!-- ================= KUITANSI ================= -->
+    <section id="receipt" class="panel hidden">
+      <div class="card">
+        <div class="text-xl font-bold mb-3">Kuitansi</div>
+        <div class="grid" style="grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">
+          <div><label class="label">Siswa</label><select id="rcStudent" class="field"></select></div>
+          <div><label class="label">Bulan (multi, koma)</label><input id="rcMonths" class="field" placeholder="2025-01,2025-02"></div>
+          <div><label class="label">Kelas (opsional, koma)</label><input id="rcClasses" class="field" placeholder="CLASS001,CLASS002"></div>
+          <div style="grid-column:1/-1;display:flex;justify-content:flex-end">
+            <button id="btnReceipt" class="btn indigo">Generate Kuitansi</button>
+          </div>
+        </div>
+        <div class="text-xs text-slate-400 mt-2">PDF otomatis tersimpan ke Drive (folder Kuitansi). Isi satu class_id untuk 1 kelas, pisahkan koma untuk multi kelas; bulan juga sama.</div>
+      </div>
+    </section>
+
+    <!-- ================= MUKAFAAH ================= -->
+    <section id="mukafaah" class="panel hidden">
+      <div class="card">
+        <div class="text-xl font-bold mb-3">Mukafaah Guru</div>
+        <div class="grid" style="grid-template-columns:repeat(5,minmax(0,1fr));gap:12px">
+          <div><label class="label">Bulan</label><input id="mkMonth" type="month" class="field"></div>
+          <div><label class="label">Guru (opsional)</label><select id="mkTeacher" class="field"></select></div>
+          <div style="display:flex;align-items:end"><button id="btnCalcMk" class="btn dark w-full">Hitung</button></div>
+          <div style="display:flex;align-items:end"><button id="btnMkPdf" class="btn w-full">Export PDF</button></div>
+        </div>
+        <pre id="mkResult" class="mt-3" style="background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px;max-height:220px;overflow:auto"></pre>
+      </div>
+    </section>
+
+    <!-- ================= PENGELUARAN ================= -->
+    <section id="expense" class="panel hidden">
+      <div class="card">
+        <div class="text-xl font-bold mb-3">Pengeluaran</div>
+        <div class="grid" style="grid-template-columns:repeat(6,minmax(0,1fr));gap:12px">
+          <div><label class="label">Tanggal</label><input id="exDate" type="date" class="field"></div>
+          <div><label class="label">Kategori</label><input id="exCat" class="field" placeholder="Sewa, Listrik, ..."></div>
+          <div><label class="label">Jumlah (JPY)</label><input id="exAmt" type="number" class="field"></div>
+          <div style="grid-column:span 3"><label class="label">Deskripsi</label><input id="exDesc" class="field"></div>
+          <div style="grid-column:1/-1;display:flex;gap:8px">
+            <input id="exNote" class="field" placeholder="Catatan (opsional)" style="flex:1">
+            <button id="btnExAdd" class="btn green">Simpan</button>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="grid" style="grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">
+          <div><label class="label">Bulan</label><input id="exMonth" type="month" class="field"></div>
+          <div style="display:flex;align-items:end"><button id="btnExPdf" class="btn w-full">Export PDF</button></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SETTINGS ================= -->
+    <section id="settings" class="panel hidden">
+      <div class="card">
+        <div class="text-xl font-bold mb-3">Settings</div>
+        <div class="text-slate-300 text-sm">Logo & folder sudah di-hardcode. Klik tombol di bawah untuk melihat ID yang dipakai.</div>
+        <div class="mt-3"><button id="btnShowBrand" class="btn dark">Tampilkan ID Logo & Folder</button></div>
+        <pre id="brandInfo" class="mt-3" style="background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px;max-height:220px;overflow:auto"></pre>
+      </div>
+    </section>
+  </div>
 
 <script>
 /* =================== CONFIG =================== */
-const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbza6sbX4ROUBM-crFRaXTGYFkWxZ7baW0ePC5pRIlqfBAjz9f1gOao48zQtRxQqnbKUTQ/exec"; // contoh: https://script.google.com/macros/s/AKfycbx.../exec
+const WEBAPP_URL = "PASTE_YOUR_EXEC_URL"; // contoh: https://script.google.com/macros/s/AKfycbx.../exec
 
 /* ============== API JSONP (no CORS) ============== */
 function api(action, params={}){
   const cbName = 'rbmj_cb_' + Math.random().toString(36).slice(2);
   return new Promise((resolve, reject)=>{
     const timer = setTimeout(()=>{ cleanup(); reject(new Error('Timeout JSONP')); }, 15000);
-
     function cleanup(){
       clearTimeout(timer);
       try{ delete window[cbName]; }catch(e){}
       if (script && script.parentNode) script.parentNode.removeChild(script);
     }
     window[cbName] = (payload)=>{ cleanup(); if(!payload.ok) reject(new Error(payload.error||'API error')); else resolve(payload.data); };
-
     const q = new URLSearchParams({ action, callback: cbName });
-    for (const [k,v] of Object.entries(params)){
-      q.append(k, (typeof v==='object') ? JSON.stringify(v) : v);
-    }
+    for (const [k,v] of Object.entries(params)){ q.append(k, (typeof v==='object') ? JSON.stringify(v) : v); }
     const script = document.createElement('script');
     script.src = `${WEBAPP_URL}?${q.toString()}`;
     script.onerror = ()=>{ cleanup(); reject(new Error('Network error')); };
@@ -267,10 +271,10 @@ document.querySelectorAll('.tab').forEach(b=>{
 
 /* ============== Init ============== */
 async function init(){
-  await api('ping'); // uji koneksi
+  await api('ping'); // koneksi
 
-  const [cls,std,tchs,cfg,counts,attStats,payStats,tdy] = await Promise.all([
-    api('listClasses'), api('listStudents'), api('listTeachers'), api('getConfig'),
+  const [cls,std,tchs,counts,attStats,payStats,tdy] = await Promise.all([
+    api('listClasses'), api('listStudents'), api('listTeachers'),
     api('dashboardCounts'), api('statsAttendance',{months:6}), api('statsPayments',{months:6}),
     api('todaySchedule')
   ]);
@@ -278,131 +282,117 @@ async function init(){
   fillSelect('attClass', cls,'id','class_name');
   fillSelect('attFilterClass', cls,'id','class_name',true);
   fillSelect('payClass', cls,'id','class_name');
-  fillSelect('recapClass', cls,'id','class_name');
   fillSelect('invStudent', std,'id','full_name');
   fillSelect('rcStudent',  std,'id','full_name');
   fillSelect('payStudent', std,'id','full_name');
   fillSelect('attStudent', std,'id','full_name');
   fillSelect('mkTeacher', tchs,'id','full_name',true);
 
-  if (cfg?.DRIVE_FOLDER_ID) folderInfo.textContent = 'Folder PDF: ' + cfg.DRIVE_FOLDER_ID;
-  if (cfg?.LOGO_FILE_ID) logoId.value = cfg.LOGO_FILE_ID;
-
   // counts
-  statStudents.textContent = counts.students;
-  statTeachers.textContent = counts.teachers;
-  statClasses.textContent  = counts.classes;
+  statStudents.textContent = counts.students ?? 0;
+  statTeachers.textContent = counts.teachers ?? 0;
+  statClasses.textContent  = counts.classes ?? 0;
   statIncome.textContent   = '¥' + (counts.income_jpy||0).toLocaleString();
-  sppUnpaid.textContent = counts.spp.unpaid;
-  sppPaid.textContent   = counts.spp.paid;
+  sppUnpaid.textContent = counts.spp?.unpaid ?? 0;
+  sppPaid.textContent   = counts.spp?.paid ?? 0;
 
   // today schedule
-  labelToday.textContent = tdy.day;
-  if (tdy.classes.length){
+  labelToday.textContent = tdy.day || '—';
+  if (tdy.classes?.length){
     todayList.innerHTML = tdy.classes.map(c=>`
-      <div class="flex items-center justify-between border-b py-2">
-        <div>${c.class_name}</div><div class="text-sm text-slate-500">${c.time||''}</div>
+      <div class="flex items-center justify-between" style="border-top:1px dashed rgba(255,255,255,.12);padding:8px 0">
+        <div>${c.class_name}</div><div class="text-sm" style="color:#93c5fd">${c.time||''}</div>
       </div>`).join('');
   }else{
     todayList.textContent = 'Tidak ada jadwal hari ini.';
   }
 
-  renderAttChart(attStats);
-  renderPayChart(payStats);
+  renderAttChart(attStats||[]);
+  renderPayChart(payStats||[]);
 
   const now = new Date(), ym = now.toISOString().slice(0,7);
   dashMonth.value = ym;
 }
 
 function fillSelect(id, arr, val, text, addAll){
-  const el = document.getElementById(id); el.innerHTML = '';
+  const el = document.getElementById(id); if (!el) return;
+  el.innerHTML = '';
   if (addAll) el.append(new Option('— Semua —',''));
-  arr.forEach(x=> el.append(new Option(x[text], x[val])));
+  (arr||[]).forEach(x=> el.append(new Option(x[text], x[val])));
 }
 
 /* ===== Absensi ===== */
-btnMarkAtt.onclick = async ()=>{
+btnMarkAtt?.addEventListener('click', async ()=>{
   await api('markAttendance', { class_id:attClass.value, student_id:attStudent.value, date:attDate.value, status:attStatus.value, note:attNote.value });
   attNote.value=''; alert('Absensi tersimpan.');
-};
-btnLoadAtt.onclick = async ()=>{
+});
+btnLoadAtt?.addEventListener('click', async ()=>{
   const rows = await api('getAttendance', { class_id:attFilterClass.value, month:attFilterMonth.value });
   const el = document.getElementById('attTable');
-  if(!rows.length){ el.innerHTML = '<div class="text-sm text-slate-500">Tidak ada data.</div>'; return; }
+  if(!rows.length){ el.innerHTML = '<div class="text-sm" style="color:#9ca3af">Tidak ada data.</div>'; return; }
   const cols = ['date','class_id','student_id','status','note'];
-  const thead = '<thead><tr>'+ cols.map(c=>`<th class="px-3 py-2 text-left">${c}</th>`).join('') +'</tr></thead>';
-  const tbody = '<tbody>'+ rows.map(r=>'<tr>'+ cols.map(c=>`<td class="px-3 py-2 border-t">${r[c]??''}</td>`).join('') +'</tr>').join('') +'</tbody>';
-  el.innerHTML = `<table class="min-w-full text-sm">${thead}${tbody}</table>`;
-};
+  const thead = '<thead><tr>'+ cols.map(c=>`<th>${c}</th>`).join('') +'</tr></thead>';
+  const tbody = '<tbody>'+ rows.map(r=>'<tr>'+ cols.map(c=>`<td>${r[c]??''}</td>`).join('') +'</tr>').join('') +'</tbody>';
+  el.innerHTML = `<div style="overflow:auto"><table>${thead}${tbody}</table></div>`;
+});
 
 /* ===== Pembayaran ===== */
-btnPay.onclick = async ()=>{
+btnPay?.addEventListener('click', async ()=>{
   await api('recordPayment', { student_id:payStudent.value, class_id:payClass.value, month:payMonth.value,
     amount_jpy:Number(payAmount.value||0), package_months:Number(payPkg.value||1), note:payNote.value });
   payNote.value=''; alert('Pembayaran dicatat.');
-};
+});
 
 /* ===== Invoice ===== */
-btnCalcInv.onclick = async ()=>{
+btnCalcInv?.addEventListener('click', async ()=>{
   const data = await api('calcInvoice', { student_id:invStudent.value, month:invMonth.value });
   invResult.textContent = JSON.stringify(data, null, 2);
-};
-btnGenInv.onclick = async ()=>{
+});
+btnGenInv?.addEventListener('click', async ()=>{
   const res = await api('generateInvoicePdf', { student_id:invStudent.value, month:invMonth.value });
   alert('Invoice dibuat. FileId: '+res.fileId);
-};
-btnInvBundle.onclick = async ()=>{
-  const months = ibMonths.value.split(',').map(s=>s.trim()).filter(Boolean);
-  const class_ids = ibClasses.value.split(',').map(s=>s.trim()).filter(Boolean);
+});
+btnInvBundle?.addEventListener('click', async ()=>{
+  const months = (ibMonths.value||'').split(',').map(s=>s.trim()).filter(Boolean);
+  const class_ids = (ibClasses.value||'').split(',').map(s=>s.trim()).filter(Boolean);
   const res = await api('generateInvoiceBundlePdf', { student_id:invStudent.value, months, class_ids });
   alert('Invoice bundle dibuat. FileId: '+res.fileId);
-};
+});
 
 /* ===== Kuitansi ===== */
-btnReceipt.onclick = async ()=>{
-  const months = rcMonths.value.split(',').map(s=>s.trim()).filter(Boolean);
-  const class_ids = rcClasses.value.split(',').map(s=>s.trim()).filter(Boolean);
+btnReceipt?.addEventListener('click', async ()=>{
+  const months = (rcMonths.value||'').split(',').map(s=>s.trim()).filter(Boolean);
+  const class_ids = (rcClasses.value||'').split(',').map(s=>s.trim()).filter(Boolean);
   const res = await api('generateReceiptPdf', { student_id:rcStudent.value, months, class_ids });
   alert('Kuitansi dibuat. FileId: '+res.fileId);
-};
-
-/* ===== Rekap kelas (menu Invoice) ===== */
-btnRecapPdf && (btnRecapPdf.onclick = async ()=>{
-  const res = await api('classSppRecapPdf', { class_id:recapClass.value, month:recapMonth.value });
-  alert('PDF rekap kelas dibuat. FileId: '+res.fileId);
 });
 
 /* ===== Mukafaah ===== */
-btnCalcMk.onclick = async ()=>{
+btnCalcMk?.addEventListener('click', async ()=>{
   const data = await api('calcMukafaah', { month:mkMonth.value, teacher_id:mkTeacher.value||null });
   mkResult.textContent = JSON.stringify(data, null, 2);
-};
-btnMkPdf.onclick = async ()=>{
+});
+btnMkPdf?.addEventListener('click', async ()=>{
   const res = await api('mukafaahPdf', { month:mkMonth.value, teacher_id:mkTeacher.value||null });
   alert('PDF mukafaah dibuat. FileId: '+res.fileId);
-};
+});
 
 /* ===== Pengeluaran ===== */
-btnExAdd.onclick = async ()=>{
+btnExAdd?.addEventListener('click', async ()=>{
   await api('recordExpense', { date:exDate.value, category:exCat.value, amount_jpy:Number(exAmt.value||0), description:exDesc.value, note:exNote.value });
   exDesc.value=''; exNote.value='';
   alert('Pengeluaran dicatat.');
-};
-btnExPdf.onclick = async ()=>{
+});
+btnExPdf?.addEventListener('click', async ()=>{
   const res = await api('expensesReportPdf', { month:exMonth.value });
   alert('PDF pengeluaran dibuat. FileId: '+res.fileId);
-};
+});
 
 /* ===== Settings ===== */
-btnMakeFolder.onclick = async ()=>{
-  const r = await api('createPdfFolder'); folderInfo.textContent = 'Folder PDF: '+r.folderId;
-  alert('Folder PDF siap: '+r.folderId);
-};
-btnSaveLogo.onclick = async ()=>{
-  if (!logoId.value) return alert('Masukkan LOGO_FILE_ID.');
-  await api('setLogoFileId', { fileId:logoId.value });
-  alert('Logo disimpan.');
-};
+btnShowBrand?.addEventListener('click', async ()=>{
+  const r = await api('brandIds');
+  brandInfo.textContent = JSON.stringify(r, null, 2);
+});
 
 /* ===== Charts ===== */
 function renderAttChart(data){
@@ -426,7 +416,7 @@ function renderPayChart(data){
   });
 }
 
-init().catch(e=> alert('API error: '+e.message+'\nCek: 1) URL /exec 2) deploy Anyone 3) JSONP aktif'));
+init().catch(e=> alert('API error: '+e.message+'\nCek: URL /exec & deployment Anyone'));
 </script>
 </body>
 </html>
