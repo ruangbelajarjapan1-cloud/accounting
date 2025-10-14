@@ -8,7 +8,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
-  :root { --card: #ffffff; --ink: #0f172a; --muted:#64748b; }
+  :root { --card:#ffffff; --ink:#0f172a; }
   body{font-family:Inter,system-ui,Segoe UI,Arial;background:#f6f7fb;color:var(--ink)}
   .card{background:var(--card);border-radius:14px;box-shadow:0 8px 20px rgba(15,23,42,.05)}
   .tile{display:flex;gap:.75rem;align-items:flex-start;padding:1rem;border-radius:14px;background:#fff;box-shadow:0 6px 16px rgba(0,0,0,.05)}
@@ -25,7 +25,8 @@
       <button class="tab px-4 py-2 rounded-xl card active" data-tab="home">Dashboard</button>
       <button class="tab px-4 py-2 rounded-xl card" data-tab="attendance">Absensi</button>
       <button class="tab px-4 py-2 rounded-xl card" data-tab="spp">Pembayaran</button>
-      <button class="tab px-4 py-2 rounded-xl card" data-tab="invoice">Tagihan & PDF</button>
+      <button class="tab px-4 py-2 rounded-xl card" data-tab="invoice">Invoice</button>
+      <button class="tab px-4 py-2 rounded-xl card" data-tab="receipt">Kuitansi</button>
       <button class="tab px-4 py-2 rounded-xl card" data-tab="mukafaah">Mukafaah</button>
       <button class="tab px-4 py-2 rounded-xl card" data-tab="expense">Pengeluaran</button>
       <button class="tab px-4 py-2 rounded-xl card" data-tab="settings">Settings</button>
@@ -37,35 +38,19 @@
     <div class="grid md:grid-cols-4 gap-4">
       <div class="tile">
         <div class="text-slate-400">👥</div>
-        <div>
-          <div class="text-sm text-slate-500">Total Siswa</div>
-          <div id="statStudents" class="text-2xl font-bold">0</div>
-          <div class="text-xs text-slate-400">dari bulan lalu</div>
-        </div>
+        <div><div class="text-sm text-slate-500">Total Siswa</div><div id="statStudents" class="text-2xl font-bold">0</div><div class="text-xs text-slate-400">dari bulan lalu</div></div>
       </div>
       <div class="tile">
         <div class="text-slate-400">🧑‍🏫</div>
-        <div>
-          <div class="text-sm text-slate-500">Total Guru</div>
-          <div id="statTeachers" class="text-2xl font-bold">0</div>
-          <div class="text-xs text-slate-400">dari bulan lalu</div>
-        </div>
+        <div><div class="text-sm text-slate-500">Total Guru</div><div id="statTeachers" class="text-2xl font-bold">0</div><div class="text-xs text-slate-400">dari bulan lalu</div></div>
       </div>
       <div class="tile">
         <div class="text-slate-400">📘</div>
-        <div>
-          <div class="text-sm text-slate-500">Total Kelas</div>
-          <div id="statClasses" class="text-2xl font-bold">0</div>
-          <div class="text-xs text-slate-400">dari bulan lalu</div>
-        </div>
+        <div><div class="text-sm text-slate-500">Total Kelas</div><div id="statClasses" class="text-2xl font-bold">0</div><div class="text-xs text-slate-400">dari bulan lalu</div></div>
       </div>
       <div class="tile">
         <div class="text-slate-400">💴</div>
-        <div>
-          <div class="text-sm text-slate-500">Pemasukan Bulan Ini</div>
-          <div id="statIncome" class="text-2xl font-bold">¥0</div>
-          <div class="text-xs text-green-600">0% dari bulan lalu</div>
-        </div>
+        <div><div class="text-sm text-slate-500">Pemasukan Bulan Ini</div><div id="statIncome" class="text-2xl font-bold">¥0</div><div class="text-xs text-green-600">0% dari bulan lalu</div></div>
       </div>
     </div>
 
@@ -80,37 +65,20 @@
       <div class="card p-4">
         <div class="font-semibold mb-2">Status Pembayaran SPP</div>
         <div class="flex items-center justify-between bg-slate-50 p-3 rounded-lg">
-          <div>
-            <div class="font-semibold">Belum Bayar</div>
-            <div class="text-xs text-slate-500">bulan ini</div>
-          </div>
-          <div class="flex items-center gap-3">
-            <span id="sppUnpaid" class="text-xl font-bold">0</span>
-            <span class="pill bg-rose-600 text-white">Menunggu</span>
-          </div>
+          <div><div class="font-semibold">Belum Bayar</div><div class="text-xs text-slate-500">bulan ini</div></div>
+          <div class="flex items-center gap-3"><span id="sppUnpaid" class="text-xl font-bold">0</span><span class="pill bg-rose-600 text-white">Menunggu</span></div>
         </div>
         <div class="flex items-center justify-between bg-slate-50 p-3 rounded-lg mt-3">
-          <div>
-            <div class="font-semibold">Sudah Bayar</div>
-            <div class="text-xs text-slate-500">bulan ini</div>
-          </div>
-          <div class="flex items-center gap-3">
-            <span id="sppPaid" class="text-xl font-bold">0</span>
-            <span class="pill bg-black text-white">Lunas</span>
-          </div>
+          <div><div class="font-semibold">Sudah Bayar</div><div class="text-xs text-slate-500">bulan ini</div></div>
+          <div class="flex items-center gap-3"><span id="sppPaid" class="text-xl font-bold">0</span><span class="pill bg-black text-white">Lunas</span></div>
         </div>
-        <div class="mt-3">
-          <button class="w-full px-4 py-2 rounded-lg bg-slate-900 text-white text-sm" onclick="goInvoice()">Lihat Detail Pembayaran</button>
-        </div>
+        <div class="mt-3"><button class="w-full px-4 py-2 rounded-lg bg-slate-900 text-white text-sm" onclick="document.querySelector('[data-tab=invoice]').click()">Lihat Detail Pembayaran</button></div>
       </div>
     </div>
 
     <div class="grid md:grid-cols-2 gap-4">
       <div class="card p-4">
-        <div class="flex items-center justify-between">
-          <div class="font-semibold">Grafik Absensi (6 bulan)</div>
-          <input id="dashMonth" type="month" class="border rounded-lg p-1 text-sm">
-        </div>
+        <div class="flex items-center justify-between"><div class="font-semibold">Grafik Absensi (6 bulan)</div><input id="dashMonth" type="month" class="border rounded-lg p-1 text-sm"></div>
         <canvas id="attChart" height="160" class="mt-3"></canvas>
       </div>
       <div class="card p-4">
@@ -171,46 +139,40 @@
     </div>
   </section>
 
-  <!-- ======= TAGIHAN & PDF ======= -->
+  <!-- ======= INVOICE ======= -->
   <section id="invoice" class="panel hidden">
     <div class="card p-4 space-y-6">
-      <div>
-        <div class="text-xl font-bold mb-3">Invoice & Kuitansi</div>
-        <div class="grid md:grid-cols-6 gap-3">
-          <div class="md:col-span-2"><label class="text-sm">Siswa</label><select id="invStudent" class="w-full border rounded-lg p-2"></select></div>
-          <div><label class="text-sm">Bulan</label><input id="invMonth" type="month" class="w-full border rounded-lg p-2"></div>
-          <div class="flex items-end"><button id="btnCalcInv" class="w-full px-4 py-2 rounded-lg bg-slate-900 text-white">Hitung Invoice</button></div>
-          <div class="flex items-end"><button id="btnGenInv" class="w-full px-4 py-2 rounded-lg bg-sky-600 text-white">Generate Invoice (1 bulan)</button></div>
-        </div>
-        <pre id="invResult" class="mt-4 bg-slate-100 p-3 rounded-lg text-xs overflow-auto"></pre>
+      <div class="text-xl font-bold">Invoice</div>
+      <div class="grid md:grid-cols-6 gap-3">
+        <div class="md:col-span-2"><label class="text-sm">Siswa</label><select id="invStudent" class="w-full border rounded-lg p-2"></select></div>
+        <div><label class="text-sm">Bulan</label><input id="invMonth" type="month" class="w-full border rounded-lg p-2"></div>
+        <div class="flex items-end"><button id="btnCalcInv" class="w-full px-4 py-2 rounded-lg bg-slate-900 text-white">Hitung</button></div>
+        <div class="flex items-end"><button id="btnGenInv" class="w-full px-4 py-2 rounded-lg bg-sky-600 text-white">Generate Invoice (1 bulan)</button></div>
       </div>
 
-      <div>
-        <div class="font-semibold mb-2">Invoice Bundle (Multi Kelas / Multi Bulan)</div>
-        <div class="grid md:grid-cols-3 gap-3">
-          <div><label class="text-sm">Bulan (pisahkan koma)</label><input id="ibMonths" placeholder="2025-01,2025-02" class="w-full border rounded-lg p-2"></div>
-          <div><label class="text-sm">Kelas (opsional, pisahkan koma)</label><input id="ibClasses" placeholder="CLASS001,CLASS002" class="w-full border rounded-lg p-2"></div>
-          <div class="flex items-end"><button id="btnInvBundle" class="w-full px-4 py-2 rounded-lg bg-emerald-600 text-white">Generate Invoice Bundle</button></div>
-        </div>
+      <div class="grid md:grid-cols-3 gap-3">
+        <div><label class="text-sm">Bulan (multi, koma)</label><input id="ibMonths" placeholder="2025-01,2025-02" class="w-full border rounded-lg p-2"></div>
+        <div><label class="text-sm">Kelas (opsional, koma)</label><input id="ibClasses" placeholder="CLASS001,CLASS002" class="w-full border rounded-lg p-2"></div>
+        <div class="flex items-end"><button id="btnInvBundle" class="w-full px-4 py-2 rounded-lg bg-emerald-600 text-white">Generate Invoice Bundle</button></div>
       </div>
 
-      <div>
-        <div class="font-semibold mb-2">Kuitansi (Multi Kelas / Multi Bulan)</div>
-        <div class="grid md:grid-cols-3 gap-3">
-          <div><label class="text-sm">Bulan (pisahkan koma)</label><input id="rcMonths" placeholder="2025-01,2025-02" class="w-full border rounded-lg p-2"></div>
-          <div><label class="text-sm">Kelas (opsional, pisahkan koma)</label><input id="rcClasses" placeholder="CLASS001,CLASS002" class="w-full border rounded-lg p-2"></div>
-          <div class="flex items-end"><button id="btnReceipt" class="w-full px-4 py-2 rounded-lg bg-indigo-600 text-white">Generate Kuitansi</button></div>
-        </div>
-      </div>
+      <pre id="invResult" class="bg-slate-100 p-3 rounded-lg text-xs overflow-auto"></pre>
+    </div>
+  </section>
 
-      <div>
-        <div class="font-semibold mb-2">Rekap SPP Per Kelas (PDF)</div>
-        <div class="grid md:grid-cols-4 gap-3">
-          <div><label class="text-sm">Kelas</label><select id="recapClass" class="w-full border rounded-lg p-2"></select></div>
-          <div><label class="text-sm">Bulan</label><input id="recapMonth" type="month" class="w-full border rounded-lg p-2"></div>
-          <div class="flex items-end"><button id="btnRecapPdf" class="w-full px-4 py-2 rounded-lg bg-sky-600 text-white">Export PDF</button></div>
+  <!-- ======= KUITANSI ======= -->
+  <section id="receipt" class="panel hidden">
+    <div class="card p-4 space-y-6">
+      <div class="text-xl font-bold">Kuitansi</div>
+      <div class="grid md:grid-cols-3 gap-3">
+        <div><label class="text-sm">Siswa</label><select id="rcStudent" class="w-full border rounded-lg p-2"></select></div>
+        <div><label class="text-sm">Bulan (multi, koma)</label><input id="rcMonths" placeholder="2025-01,2025-02" class="w-full border rounded-lg p-2"></div>
+        <div><label class="text-sm">Kelas (opsional, koma)</label><input id="rcClasses" placeholder="CLASS001,CLASS002" class="w-full border rounded-lg p-2"></div>
+        <div class="md:col-span-3 flex justify-end">
+          <button id="btnReceipt" class="px-4 py-2 rounded-lg bg-indigo-600 text-white">Generate Kuitansi</button>
         </div>
       </div>
+      <div class="text-sm text-slate-500">• 1 kelas? isi 1 class_id • Multi kelas? pisahkan koma • Multi bulan? pisahkan koma. PDF otomatis tersimpan di Google Drive (RBMJ_PDF).</div>
     </div>
   </section>
 
@@ -257,10 +219,7 @@
       <div class="text-xl font-bold mb-3">Settings</div>
       <div class="flex gap-2 items-end flex-wrap">
         <button id="btnMakeFolder" class="px-4 py-2 rounded-lg bg-sky-600 text-white">Buat Folder PDF</button>
-        <div>
-          <label class="text-sm">Drive LOGO_FILE_ID</label>
-          <input id="logoId" class="border rounded-lg p-2" placeholder="1AbcDEFg...">
-        </div>
+        <div><label class="text-sm">Drive LOGO_FILE_ID</label><input id="logoId" class="border rounded-lg p-2" placeholder="1AbcDEFg..."></div>
         <button id="btnSaveLogo" class="px-4 py-2 rounded-lg bg-slate-900 text-white">Simpan Logo</button>
         <span id="folderInfo" class="text-sm text-slate-500"></span>
       </div>
@@ -269,22 +228,34 @@
 </div>
 
 <script>
-const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbza6sbX4ROUBM-crFRaXTGYFkWxZ7baW0ePC5pRIlqfBAjz9f1gOao48zQtRxQqnbKUTQ/exec"; // gunakan URL /exec
+/* =================== CONFIG =================== */
+const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbza6sbX4ROUBM-crFRaXTGYFkWxZ7baW0ePC5pRIlqfBAjz9f1gOao48zQtRxQqnbKUTQ/exec"; // contoh: https://script.google.com/macros/s/AKfycbx.../exec
 
-/* ==== API GET-only (hindari preflight) ==== */
-function api(action, data = {}) {
-  const params = {};
-  for (const [k,v] of Object.entries(data)) {
-    params[k] = (typeof v === 'object') ? JSON.stringify(v) : v;
-  }
-  const qs = new URLSearchParams({ action, ...params });
-  const url = `${WEBAPP_URL}?${qs.toString()}`;
-  return fetch(url, { method: 'GET', mode: 'cors', cache: 'no-cache' })
-    .then(r => r.json())
-    .then(j => { if (!j.ok) throw new Error(j.error || 'API error'); return j.data; });
+/* ============== API JSONP (no CORS) ============== */
+function api(action, params={}){
+  const cbName = 'rbmj_cb_' + Math.random().toString(36).slice(2);
+  return new Promise((resolve, reject)=>{
+    const timer = setTimeout(()=>{ cleanup(); reject(new Error('Timeout JSONP')); }, 15000);
+
+    function cleanup(){
+      clearTimeout(timer);
+      try{ delete window[cbName]; }catch(e){}
+      if (script && script.parentNode) script.parentNode.removeChild(script);
+    }
+    window[cbName] = (payload)=>{ cleanup(); if(!payload.ok) reject(new Error(payload.error||'API error')); else resolve(payload.data); };
+
+    const q = new URLSearchParams({ action, callback: cbName });
+    for (const [k,v] of Object.entries(params)){
+      q.append(k, (typeof v==='object') ? JSON.stringify(v) : v);
+    }
+    const script = document.createElement('script');
+    script.src = `${WEBAPP_URL}?${q.toString()}`;
+    script.onerror = ()=>{ cleanup(); reject(new Error('Network error')); };
+    document.body.appendChild(script);
+  });
 }
 
-/* ==== Tabs ==== */
+/* ============== Tabs ============== */
 document.querySelectorAll('.tab').forEach(b=>{
   b.addEventListener('click', ()=>{
     document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
@@ -293,20 +264,23 @@ document.querySelectorAll('.tab').forEach(b=>{
     document.getElementById(b.dataset.tab).classList.remove('hidden');
   });
 });
-function goInvoice(){ document.querySelector('[data-tab="invoice"]').click(); }
 
-/* ==== Init ==== */
+/* ============== Init ============== */
 async function init(){
+  await api('ping'); // uji koneksi
+
   const [cls,std,tchs,cfg,counts,attStats,payStats,tdy] = await Promise.all([
     api('listClasses'), api('listStudents'), api('listTeachers'), api('getConfig'),
     api('dashboardCounts'), api('statsAttendance',{months:6}), api('statsPayments',{months:6}),
     api('todaySchedule')
   ]);
+
   fillSelect('attClass', cls,'id','class_name');
   fillSelect('attFilterClass', cls,'id','class_name',true);
   fillSelect('payClass', cls,'id','class_name');
   fillSelect('recapClass', cls,'id','class_name');
   fillSelect('invStudent', std,'id','full_name');
+  fillSelect('rcStudent',  std,'id','full_name');
   fillSelect('payStudent', std,'id','full_name');
   fillSelect('attStudent', std,'id','full_name');
   fillSelect('mkTeacher', tchs,'id','full_name',true);
@@ -325,7 +299,10 @@ async function init(){
   // today schedule
   labelToday.textContent = tdy.day;
   if (tdy.classes.length){
-    todayList.innerHTML = tdy.classes.map(c=>`<div class="flex items-center justify-between border-b py-2"><div>${c.class_name}</div><div class="text-sm text-slate-500">${c.time||''}</div></div>`).join('');
+    todayList.innerHTML = tdy.classes.map(c=>`
+      <div class="flex items-center justify-between border-b py-2">
+        <div>${c.class_name}</div><div class="text-sm text-slate-500">${c.time||''}</div>
+      </div>`).join('');
   }else{
     todayList.textContent = 'Tidak ada jadwal hari ini.';
   }
@@ -337,36 +314,13 @@ async function init(){
   dashMonth.value = ym;
 }
 
-/* ==== Charts ==== */
-function renderAttChart(data){
-  const labels = data.map(x=>x.month);
-  new Chart(document.getElementById('attChart'),{
-    type:'line',
-    data:{ labels, datasets:[
-      {label:'Hadir', data:data.map(x=>x.present)},
-      {label:'Izin', data:data.map(x=>x.excused)},
-      {label:'Telat', data:data.map(x=>x.late)},
-      {label:'Alfa',  data:data.map(x=>x.absent)}
-    ]},
-    options:{ responsive:true, maintainAspectRatio:false }
-  });
-}
-function renderPayChart(data){
-  new Chart(document.getElementById('payChart'),{
-    type:'bar',
-    data:{ labels:data.map(x=>x.month), datasets:[{label:'SPP (JPY)', data:data.map(x=>x.total_jpy)}] },
-    options:{ responsive:true, maintainAspectRatio:false }
-  });
-}
-
-/* ==== Fill select ==== */
 function fillSelect(id, arr, val, text, addAll){
   const el = document.getElementById(id); el.innerHTML = '';
   if (addAll) el.append(new Option('— Semua —',''));
   arr.forEach(x=> el.append(new Option(x[text], x[val])));
 }
 
-/* ==== Absensi ==== */
+/* ===== Absensi ===== */
 btnMarkAtt.onclick = async ()=>{
   await api('markAttendance', { class_id:attClass.value, student_id:attStudent.value, date:attDate.value, status:attStatus.value, note:attNote.value });
   attNote.value=''; alert('Absensi tersimpan.');
@@ -381,21 +335,21 @@ btnLoadAtt.onclick = async ()=>{
   el.innerHTML = `<table class="min-w-full text-sm">${thead}${tbody}</table>`;
 };
 
-/* ==== Pembayaran ==== */
+/* ===== Pembayaran ===== */
 btnPay.onclick = async ()=>{
   await api('recordPayment', { student_id:payStudent.value, class_id:payClass.value, month:payMonth.value,
     amount_jpy:Number(payAmount.value||0), package_months:Number(payPkg.value||1), note:payNote.value });
   payNote.value=''; alert('Pembayaran dicatat.');
 };
 
-/* ==== Invoice & Receipt ==== */
+/* ===== Invoice ===== */
 btnCalcInv.onclick = async ()=>{
   const data = await api('calcInvoice', { student_id:invStudent.value, month:invMonth.value });
   invResult.textContent = JSON.stringify(data, null, 2);
 };
 btnGenInv.onclick = async ()=>{
   const res = await api('generateInvoicePdf', { student_id:invStudent.value, month:invMonth.value });
-  alert('Invoice (1 bulan) dibuat. FileId: '+res.fileId);
+  alert('Invoice dibuat. FileId: '+res.fileId);
 };
 btnInvBundle.onclick = async ()=>{
   const months = ibMonths.value.split(',').map(s=>s.trim()).filter(Boolean);
@@ -403,18 +357,32 @@ btnInvBundle.onclick = async ()=>{
   const res = await api('generateInvoiceBundlePdf', { student_id:invStudent.value, months, class_ids });
   alert('Invoice bundle dibuat. FileId: '+res.fileId);
 };
+
+/* ===== Kuitansi ===== */
 btnReceipt.onclick = async ()=>{
   const months = rcMonths.value.split(',').map(s=>s.trim()).filter(Boolean);
   const class_ids = rcClasses.value.split(',').map(s=>s.trim()).filter(Boolean);
-  const res = await api('generateReceiptPdf', { student_id:invStudent.value, months, class_ids });
+  const res = await api('generateReceiptPdf', { student_id:rcStudent.value, months, class_ids });
   alert('Kuitansi dibuat. FileId: '+res.fileId);
 };
-btnRecapPdf.onclick = async ()=>{
+
+/* ===== Rekap kelas (menu Invoice) ===== */
+btnRecapPdf && (btnRecapPdf.onclick = async ()=>{
   const res = await api('classSppRecapPdf', { class_id:recapClass.value, month:recapMonth.value });
   alert('PDF rekap kelas dibuat. FileId: '+res.fileId);
+});
+
+/* ===== Mukafaah ===== */
+btnCalcMk.onclick = async ()=>{
+  const data = await api('calcMukafaah', { month:mkMonth.value, teacher_id:mkTeacher.value||null });
+  mkResult.textContent = JSON.stringify(data, null, 2);
+};
+btnMkPdf.onclick = async ()=>{
+  const res = await api('mukafaahPdf', { month:mkMonth.value, teacher_id:mkTeacher.value||null });
+  alert('PDF mukafaah dibuat. FileId: '+res.fileId);
 };
 
-/* ==== Pengeluaran ==== */
+/* ===== Pengeluaran ===== */
 btnExAdd.onclick = async ()=>{
   await api('recordExpense', { date:exDate.value, category:exCat.value, amount_jpy:Number(exAmt.value||0), description:exDesc.value, note:exNote.value });
   exDesc.value=''; exNote.value='';
@@ -425,17 +393,7 @@ btnExPdf.onclick = async ()=>{
   alert('PDF pengeluaran dibuat. FileId: '+res.fileId);
 };
 
-/* ==== Mukafaah ==== */
-btnCalcMk.onclick = async ()=>{
-  const data = await api('calcMukafaah', { month:mkMonth.value, teacher_id:mkTeacher.value||null });
-  mkResult.textContent = JSON.stringify(data, null, 2);
-};
-btnMkPdf.onclick = async ()=>{
-  const res = await api('mukafaahPdf', { month:mkMonth.value, teacher_id:mkTeacher.value||null });
-  alert('PDF mukafaah dibuat. FileId: '+res.fileId);
-};
-
-/* ==== Settings ==== */
+/* ===== Settings ===== */
 btnMakeFolder.onclick = async ()=>{
   const r = await api('createPdfFolder'); folderInfo.textContent = 'Folder PDF: '+r.folderId;
   alert('Folder PDF siap: '+r.folderId);
@@ -446,7 +404,29 @@ btnSaveLogo.onclick = async ()=>{
   alert('Logo disimpan.');
 };
 
-init().catch(e=> alert('API error: '+e.message+'\nCek: 1) WebApp Anyone 2) URL /exec 3) Spreadsheet headers OK'));
+/* ===== Charts ===== */
+function renderAttChart(data){
+  const labels = data.map(x=>x.month);
+  new Chart(document.getElementById('attChart'),{
+    type:'line',
+    data:{ labels, datasets:[
+      {label:'Hadir', data:data.map(x=>x.present)},
+      {label:'Izin',  data:data.map(x=>x.excused)},
+      {label:'Telat', data:data.map(x=>x.late)},
+      {label:'Alfa',  data:data.map(x=>x.absent)}
+    ]},
+    options:{ responsive:true, maintainAspectRatio:false }
+  });
+}
+function renderPayChart(data){
+  new Chart(document.getElementById('payChart'),{
+    type:'bar',
+    data:{ labels:data.map(x=>x.month), datasets:[{label:'SPP (JPY)', data:data.map(x=>x.total_jpy)}] },
+    options:{ responsive:true, maintainAspectRatio:false }
+  });
+}
+
+init().catch(e=> alert('API error: '+e.message+'\nCek: 1) URL /exec 2) deploy Anyone 3) JSONP aktif'));
 </script>
 </body>
 </html>
