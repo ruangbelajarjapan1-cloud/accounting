@@ -1,7 +1,7 @@
-// ===== BASE URL Apps Script (langsung /exec) =====
+// ===== URL Apps Script (WAJIB: /exec) =====
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxvyEzH2EXVr4tQ2rcrN5qxo9KkMS9Nqz0UPkokatszxbeCZqrU18K5xhVf6ERXzmT7RA/exec';
 
-// ===== JSONP helper =====
+// ===== JSONP helper (tanpa CORS) =====
 function jsonp(action, payload = {}) {
   return new Promise((resolve, reject) => {
     const cb = 'rbmj_cb_' + Math.random().toString(36).slice(2);
@@ -10,23 +10,22 @@ function jsonp(action, payload = {}) {
       action: action || '',
       payload: JSON.stringify(payload || {}),
       callback: cb,
-      _: Date.now().toString() // bust cache
+      _: Date.now().toString()
     });
     const s = document.createElement('script');
     s.src = GAS_URL + '?' + q.toString();
-    s.onerror = (e) => { reject(new Error('JSONP failed')); cleanup(); };
+    s.onerror = () => { reject(new Error('JSONP failed')); cleanup(); };
     document.body.appendChild(s);
     function cleanup(){ try{ delete window[cb]; }catch(_){ window[cb]=undefined; } s.remove(); }
   });
 }
-
-// Aliasing lama: api() -> jsonp()
-const api = (action, payload) => jsonp(action, payload);
+const api = (a,p)=>jsonp(a,p);
 
 // ===== util UI =====
 function qs(id){return document.getElementById(id);}
 function show(page){document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden')); qs('page-'+page).classList.remove('hidden');}
 document.querySelectorAll('.nav').forEach(b=> b.onclick = ()=> show(b.dataset.page));
+
 function loadLogo(){ const u=localStorage.getItem('rbmj_logo'); const img=document.getElementById('ui-logo'); if(img) img.src=u||'https://via.placeholder.com/80x80.png?text=RBMJ'; }
 loadLogo();
 
@@ -42,7 +41,7 @@ async function refreshCache(){
   CACHE.students=s; CACHE.teachers=t; CACHE.classes=c; CACHE.enrollments=e;
   CACHE._s=mapById(s); CACHE._t=mapById(t); CACHE._c=mapById(c);
 }
-refreshCache().then(()=>{ loadDashboard(); loadStudents(); loadTeachers(); loadClasses(); loadEnrollments(); loadAttendance(); loadPayments(); loadInvoices(); });
+refreshCache().then(()=>{ loadDashboard(); loadStudents(); loadTeachers(); loadClasses(); loadEnrollments(); loadAttendance(); loadPayments(); loadInvoices(); loadMukafaah(); loadExpenses(); loadCashbook(); });
 
 // ===== dashboard =====
 async function loadDashboard(){
@@ -86,9 +85,7 @@ function loadTeachers(){
   const d=CACHE.teachers;
   const h=[`<table class="min-w-full text-sm"><thead><tr class="text-left">
     <th class="p-2">ID</th><th class="p-2">Nama</th><th class="p-2">Kontak</th><th class="p-2">Status</th><th class="p-2"></th></tr></thead><tbody>`,
-    ...d.map(r=>`<tr class="border-t"><td class="p-2">${r.id}</td><td class="p-2">${r.full_name}</td>
-      <td class="p-2">${r.phone||''}<br>${r.email||''}</td><td class="p-2">${r.status||''}</td>
-      <td class="p-2"><button class="text-sky-700" onclick='openTeacherForm(${JSON.stringify(r)})'>Edit</button></td></tr>`),
+    ...d.map(r=>`<tr class="border-t"><td class="p-2">${r.id}</td><td class="p-2">${r.full_name}</td><td class="p-2">${r.phone||''}<br>${r.email||''}</td><td class="p-2">${r.status||''}</td><td class="p-2"><button class="text-sky-700" onclick='openTeacherForm(${JSON.stringify(r)})'>Edit</button></td></tr>`),
     `</tbody></table>`];
   qs('teachers-table').innerHTML=h.join('');
 }
@@ -138,7 +135,7 @@ async function loadAttendance(){
   qs('attendance-table').innerHTML=h.join('');
 }
 
-// ===== Pembayaran (auto-fee + checkbox + batch + link kwitansi) =====
+// ===== Pembayaran =====
 function openPaymentModal(){
   qs('pay-student').innerHTML = CACHE.students.map(s=>`<option value="${s.id}">${s.full_name} — (${s.id})</option>`).join('');
   const m=(qs('pay-month')?.value)||new Date().toISOString().slice(0,7); qs('pay-month-modal').value=m;
@@ -159,7 +156,7 @@ function closePayModal(){ qs('pay-modal').classList.add('hidden'); qs('pay-modal
 async function previewFees(){
   const sid=qs('pay-student').value;
   const class_ids=Array.from(document.querySelectorAll('.pay-class:checked')).map(x=>x.value);
-  if(class_ids.length===0){ qs('pay-summary').innerHTML=''; return; }
+  if(class_ids.length===0){ qs('pay-summary').innerHTML=''; qs('pay-amount').value=''; return; }
   const r=await api('fees.preview',{student_id:sid, class_ids});
   const fmt=n=>new Intl.NumberFormat('ja-JP',{style:'currency',currency:'JPY'}).format(n);
   qs('pay-summary').innerHTML = `
@@ -181,7 +178,6 @@ async function submitPayment(){
     if(!student_id||!month) return alert('Pilih siswa dan bulan.');
 
     let receiptLinks=[];
-
     if(selected.length>0){
       let items=[]; try{ items=JSON.parse(qs('pay-summary').dataset.preview||'[]'); }catch(_){}
       if(items.length===0){ const r=await api('fees.preview',{student_id, class_ids:selected}); items=r.items; }
@@ -245,7 +241,7 @@ function openExpenseForm(){ const date=prompt('Tanggal (YYYY-MM-DD)',''); if(dat
 async function loadExpenses(){
   const d=await api('expenses.list'), fmt=n=>new Intl.NumberFormat('ja-JP',{style:'currency',currency:'JPY'}).format(n);
   const h=[`<table class="min-w-full text-sm"><thead><tr class="text-left"><th class="p-2">Tanggal</th><th class="p-2">Kategori</th><th class="p-2">Nominal</th><th class="p-2">Keterangan</th><th class="p-2">Bukti</th></tr></thead><tbody>`,
-    ...d.map(r=>`<tr class="border-t"><td class="p-2">${r.date||''}</td><td class="p-2">${r.category||''}</td><td class="p-2">${fmt(Number(r.amount_jpy||0))}</td><td class="p-2">${r.description||''}</td><td class="p-2">${r.pdf_file_id?`<a class="text-sky-700" target="_blank" href="https://drive.google.com/uc?id=${r.pdf_file_id}">PDF</a>`:''}</td></tr>`),
+    ...d.map(r=>`<tr class="border-t"><td class="p-2">${r.date||''}</td><td class="p-2">${r.category||''}</td><td class="p-2">${fmt(Number(r.amount_jpy||0))}</td><td class="p-2">${r.description||''}</td><td class="p-2">${r.pdf_file_id?`<a target="_blank" class="text-sky-700" href="https://drive.google.com/uc?id=${r.pdf_file_id}">PDF</a>`:''}</td></tr>`),
     `</tbody></table>`];
   qs('expenses-table').innerHTML=h.join('');
 }
