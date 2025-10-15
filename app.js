@@ -1,7 +1,38 @@
-// ===== KONFIG: set sekali & amanin di localStorage
-const GAS_BASE = localStorage.getItem('rbmj_gas') || 'https://script.google.com/macros/s/AKfycbxvyEzH2EXVr4tQ2rcrN5qxo9KkMS9Nqz0UPkokatszxbeCZqrU18K5xhVf6ERXzmT7RA/exec';
-function setGasUrl(url){ localStorage.setItem('rbmj_gas', url); alert('Endpoint tersimpan:\n'+url); }
+// ===== KONFIG ENDPOINT (versi otomatis) =====
+const DEFAULT_GAS = 'https://script.google.com/macros/s/AKfycbxvyEzH2EXVr4tQ2rcrN5qxo9KkMS9Nqz0UPkokatszxbeCZqrU18K5xhVf6ERXzmT7RA/exec';
 
+// kalau localStorage belum ada endpoint, set default
+if (!localStorage.getItem('rbmj_gas')) {
+  localStorage.setItem('rbmj_gas', DEFAULT_GAS);
+}
+
+// fungsi UI (opsional: masih bisa diubah manual)
+function setGasUrl(url){ localStorage.setItem('rbmj_gas', url); }
+function uiSetEndpoint(){
+  const v = document.getElementById('endpoint-input')?.value?.trim();
+  if(!v) return alert('Masukkan URL /exec dari Apps Script');
+  setGasUrl(v);
+  document.getElementById('endpoint-show').textContent = 'Endpoint: '+v;
+  alert('Endpoint tersimpan. Muat ulang halaman.');
+  location.reload();
+}
+function showEndpoint(){
+  const e = localStorage.getItem('rbmj_gas') || '(belum diset)';
+  const el = document.getElementById('endpoint-show');
+  if(el) el.textContent = 'Endpoint: '+e;
+}
+showEndpoint();
+
+// ===== LOGO UI =====
+function setLogoUrl(url){ localStorage.setItem('rbmj_logo', url); loadLogo(); }
+function loadLogo(){
+  const url = localStorage.getItem('rbmj_logo');
+  const img = document.getElementById('ui-logo');
+  if(img) img.src = url || 'https://via.placeholder.com/80x80.png?text=RBMJ';
+}
+loadLogo();
+
+// ===== NAV =====
 function qs(id){ return document.getElementById(id); }
 function show(page){
   document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));
@@ -9,21 +40,34 @@ function show(page){
 }
 document.querySelectorAll('.nav').forEach(b=> b.onclick = ()=> show(b.dataset.page));
 
-// HTTP helper
+// ===== HTTP helper =====
 async function api(action, payload={}){
-  const res = await fetch(GAS_BASE+'?action='+encodeURIComponent(action),{
-    method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
+  const base = localStorage.getItem('rbmj_gas');
+  if(!base) throw new Error('Endpoint belum diset (pakai tombol Set Endpoint atau hardcode DEFAULT_GAS).');
+  const res = await fetch(base+'?action='+encodeURIComponent(action),{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(payload)
   });
-  if(!res.ok) throw new Error('HTTP '+res.status);
+  if(!res.ok){
+    const t = await res.text();
+    throw new Error('HTTP '+res.status+' '+t);
+  }
   return res.json();
 }
+async function ping(){
+  try { const r = await api('stats'); alert('OK: '+JSON.stringify(r)); }
+  catch(e){ alert('Gagal: '+e.message); }
+}
 
-// Dashboard
+// ===== Dashboard =====
 async function loadDashboard(){
-  const s = await api('stats');
-  qs('stat-students').textContent = s.students;
-  qs('stat-classes').textContent  = s.classes;
-  qs('stat-payments').textContent = new Intl.NumberFormat('ja-JP',{style:'currency',currency:'JPY'}).format(s.paymentsThisMonth||0);
+  try{
+    const s = await api('stats');
+    qs('stat-students').textContent = s.students;
+    qs('stat-classes').textContent  = s.classes;
+    qs('stat-payments').textContent = new Intl.NumberFormat('ja-JP',{style:'currency',currency:'JPY'}).format(s.paymentsThisMonth||0);
+  }catch(e){ console.warn(e.message); }
 }
 loadDashboard();
 
@@ -36,7 +80,7 @@ function openStudentForm(row={}){
   const email  = prompt('Email', row.email||'');
   const status = prompt('Status (Active/Inactive)', row.status||'Active');
   api('students.upsert',{row:{id:row.id||'', full_name:full, family_key:family, parent_name:parent, parent_phone:phone, email, note:'', status}})
-    .then(loadStudents);
+    .then(loadStudents).catch(e=>alert(e.message));
 }
 async function loadStudents(){
   const data = await api('students.list');
@@ -64,7 +108,7 @@ function openTeacherForm(row={}){
   const phone= prompt('Telp', row.phone||'');
   const email= prompt('Email', row.email||'');
   const status=prompt('Status (Active/Inactive)', row.status||'Active');
-  api('teachers.upsert',{row:{id:row.id||'', full_name:full, phone, email, note:'', status}}).then(loadTeachers);
+  api('teachers.upsert',{row:{id:row.id||'', full_name:full, phone, email, note:'', status}}).then(loadTeachers).catch(e=>alert(e.message));
 }
 async function loadTeachers(){
   const data = await api('teachers.list');
@@ -89,7 +133,7 @@ function openClassForm(row={}){
   const time = prompt('Jam (HH:MM)', row.time||'');
   const status = prompt('Status (Active/Inactive)', row.status||'Active');
   api('classes.upsert',{row:{id:row.id||'', class_name:name, teacher_id, monthly_fee_jpy:fee, day_of_week:dow, time, note:'', status}})
-    .then(loadClasses);
+    .then(loadClasses).catch(e=>alert(e.message));
 }
 async function loadClasses(){
   const data = await api('classes.list');
@@ -112,7 +156,7 @@ function openEnrollForm(row={}){
   const start = prompt('Mulai (YYYY-MM)', row.start_month||'');
   const end   = prompt('Akhir (YYYY-MM atau kosong)', row.end_month||'');
   api('enrollments.upsert',{row:{id:row.id||'', student_id, class_id, start_month:start, end_month:end}})
-    .then(loadEnrollments);
+    .then(loadEnrollments).catch(e=>alert(e.message));
 }
 async function loadEnrollments(){
   const data = await api('enrollments.list');
@@ -133,7 +177,7 @@ function openAttendanceForm(){
   const student_id = prompt('ID Siswa','');
   const date = prompt('Tanggal (YYYY-MM-DD)','');
   const status = prompt('Status (Present/Absent/Late/Excused)','Present');
-  api('attendance.add',{row:{class_id, student_id, date, status, note:''}}).then(loadAttendance);
+  api('attendance.add',{row:{class_id, student_id, date, status, note:''}}).then(loadAttendance).catch(e=>alert(e.message));
 }
 async function loadAttendance(){
   const data = await api('attendance.list');
@@ -156,7 +200,8 @@ function openPaymentForm(){
   const method     = prompt('Metode (Cash/Transfer/QR)','Cash');
   const package_months = prompt('Paket bulan? (angka, opsional)','');
   api('payments.add',{row:{student_id, class_id, month, amount_jpy:Number(amount), method, package_months}})
-    .then(r=>{ alert('Tersimpan. Kwitansi: '+(r.pdf_file_id? 'Drive file ID '+r.pdf_file_id : '—')); loadPayments(); });
+    .then(r=>{ alert('Tersimpan. Kwitansi: '+(r.pdf_file_id? 'Drive ID '+r.pdf_file_id : '—')); loadPayments(); })
+    .catch(e=>alert(e.message));
 }
 async function loadPayments(){
   const data = await api('payments.list',{month:(qs('pay-month').value||'').slice(0,7)});
@@ -217,7 +262,7 @@ function openExpenseForm(){
   const category = prompt('Kategori','');
   const amount   = prompt('Nominal JPY','');
   const desc     = prompt('Deskripsi','');
-  api('expenses.add',{row:{date, category, amount_jpy:Number(amount), description:desc, note:''}}).then(loadExpenses);
+  api('expenses.add',{row:{date, category, amount_jpy:Number(amount), description:desc, note:''}}).then(loadExpenses).catch(e=>alert(e.message));
 }
 async function loadExpenses(){
   const data = await api('expenses.list');
