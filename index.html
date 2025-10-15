@@ -42,7 +42,13 @@
   .table th{color:#475569}
   .panel.hidden{display:none}
   .chart-box{position:relative;height:250px}
-  .chart-box canvas{pointer-events:none} /* supaya tidak menghalangi klik */
+  .chart-box canvas{pointer-events:none}
+
+  /* Checklist kelas (klik biasa) */
+  .checklist{background:#fff;border:1px solid var(--line);border-radius:12px;padding:6px;max-height:180px;overflow:auto}
+  .check-item{display:flex;gap:10px;align-items:flex-start;padding:6px 6px;border-bottom:1px solid #f1f5f9}
+  .check-item:last-child{border-bottom:none}
+  .check-item input{margin-top:2px}
   @media (max-width:980px){ .cards{grid-template-columns:repeat(2,minmax(0,1fr))} .two{grid-template-columns:1fr} }
   @media (max-width:560px){ .cards{grid-template-columns:1fr} }
 </style>
@@ -118,10 +124,13 @@
       <div class="text-xl font-extrabold mb-3">Pembayaran SPP</div>
       <div class="grid" style="grid-template-columns:repeat(6,minmax(0,1fr));gap:14px">
         <div style="grid-column:span 2"><label class="label">Siswa</label><select id="payStudent" class="field select"></select></div>
-        <div><label class="label">Kelas (pilih banyak)</label>
-          <select id="payClasses" class="field" multiple size="6" style="height:180px"></select>
-          <div class="mini mt-1">Tekan/ketuk untuk memilih beberapa kelas.</div>
+
+        <!-- Checklist kelas -->
+        <div><label class="label">Kelas (pilih beberapa)</label>
+          <div id="payClasses" class="checklist"></div>
+          <div class="mini mt-1">Klik untuk mencentang kelas yang ingin dibayar.</div>
         </div>
+
         <div><label class="label">Bulan</label><input id="payMonth" type="month" class="field" /></div>
         <div><label class="label">Jumlah (JPY)</label><input id="payAmount" type="number" class="field" /></div>
         <div><label class="label">Paket (bulan)</label><input id="payPkg" type="number" min="1" value="1" class="field" /></div>
@@ -145,9 +154,11 @@
       <div class="grid" style="grid-template-columns:repeat(6,minmax(0,1fr));gap:14px">
         <div style="grid-column:span 2"><label class="label">Siswa</label><select id="invStudent" class="field select"></select></div>
         <div><label class="label">Bulan</label><input id="invMonth" type="month" class="field" /></div>
+
         <div><label class="label">Kelas (opsional, multi)</label>
-          <select id="invClasses" class="field" multiple size="6" style="height:180px"></select>
+          <div id="invClasses" class="checklist"></div>
         </div>
+
         <div style="grid-column:1/-1;display:flex;gap:8px;justify-content:flex-end">
           <button id="btnCalcInv" class="btn secondary">Hitung</button>
           <button id="btnGenInv" class="btn primary">Generate Invoice (1 bulan)</button>
@@ -159,7 +170,7 @@
         <div><label class="label">Bulan (bundle, koma)</label><input id="ibMonths" class="field" placeholder="2025-01,2025-02" /></div>
         <div>
           <label class="label">Kelas (opsional, multi)</label>
-          <select id="ibClasses" class="field" multiple size="6" style="height:180px"></select>
+          <div id="ibClasses" class="checklist"></div>
         </div>
       </div>
       <div class="mt-2"><button id="btnInvBundle" class="btn success">Generate Invoice Bundle</button></div>
@@ -176,7 +187,7 @@
         <div><label class="label">Bulan (multi, koma)</label><input id="rcMonths" class="field" placeholder="2025-01,2025-02" /></div>
         <div>
           <label class="label">Kelas (opsional, multi)</label>
-          <select id="rcClasses" class="field" multiple size="6" style="height:180px"></select>
+          <div id="rcClasses" class="checklist"></div>
         </div>
       </div>
       <div class="mt-2"><button id="btnReceipt" class="btn primary">Generate Kuitansi</button></div>
@@ -222,7 +233,7 @@
 /* ============ KONFIG ============ */
 const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbza6sbX4ROUBM-crFRaXTGYFkWxZ7baW0ePC5pRIlqfBAjz9f1gOao48zQtRxQqnbKUTQ/exec";
 
-/* JSONP fetch aman */
+/* JSONP fetch */
 function api(action, params={}){
   const cb='cb_'+Math.random().toString(36).slice(2);
   return new Promise((resolve,reject)=>{
@@ -244,13 +255,17 @@ document.querySelectorAll('.tab').forEach(b=>{
   });
 });
 
-/* Helpers */
-function getSelectValues(el){ return Array.from(el.selectedOptions||[]).map(o=>o.value); }
-function fillSelect(el, arr, val, txt, withAll){
+/* Checklist helper */
+function renderChecklist(el, items){ // items: [{id, class_name}]
   el.innerHTML='';
-  if (withAll) el.append(new Option('— Semua —',''));
-  (arr||[]).forEach(x=> el.append(new Option(x[txt], x[val])));
+  (items||[]).forEach(it=>{
+    const row=document.createElement('label'); row.className='check-item';
+    const cb=document.createElement('input'); cb.type='checkbox'; cb.value=String(it.id);
+    const text=document.createElement('div'); text.innerHTML=`<div class="font-semibold text-sm">${it.class_name}</div><div class="mini">${it.id}</div>`;
+    row.appendChild(cb); row.appendChild(text); el.appendChild(row);
+  });
 }
+function getCheckedValues(el){ return Array.from(el.querySelectorAll('input[type="checkbox"]:checked')).map(x=>x.value); }
 
 /* Data */
 let CLS=[], STU=[], TCH=[];
@@ -264,20 +279,17 @@ async function init(){
   ]);
   CLS=cls||[]; STU=stu||[]; TCH=tch||[];
 
-  // fill selects
-  fillSelect(attClass,CLS,'id','class_name');
-  fillSelect(attFilterClass,CLS,'id','class_name',true);
-  fillSelect(attStudent,STU,'id','full_name');
-  fillSelect(payStudent,STU,'id','full_name');
-  fillSelect(invStudent,STU,'id','full_name');
-  fillSelect(rcStudent,STU,'id','full_name');
-  fillSelect(mkTeacher,TCH,'id','full_name',true);
+  const fill=(id, arr, val, txt, all)=>{ const el=document.getElementById(id); el.innerHTML=''; if(all) el.append(new Option('— Semua —','')); (arr||[]).forEach(x=> el.append(new Option(x[txt], x[val]))); };
+  fill('attClass',CLS,'id','class_name'); fill('attFilterClass',CLS,'id','class_name',true);
+  fill('attStudent',STU,'id','full_name'); fill('payStudent',STU,'id','full_name');
+  fill('invStudent',STU,'id','full_name'); fill('rcStudent',STU,'id','full_name');
+  fill('mkTeacher',TCH,'id','full_name',true);
 
-  // multi selects (kelas)
-  fillSelect(payClasses,CLS,'id','class_name');
-  fillSelect(invClasses,CLS,'id','class_name');
-  fillSelect(ibClasses, CLS,'id','class_name');
-  fillSelect(rcClasses, CLS,'id','class_name');
+  // checklist kelas
+  renderChecklist(payClasses, CLS);
+  renderChecklist(invClasses, CLS);
+  renderChecklist(ibClasses,  CLS);
+  renderChecklist(rcClasses,  CLS);
 
   // stats
   statStudents.textContent = counts.students||0;
@@ -315,7 +327,7 @@ btnLoadAtt?.addEventListener('click', async ()=>{
 
 /* Pembayaran: auto hitung & rincian */
 async function quotePay(){
-  const student_id=payStudent.value, month=payMonth.value, class_ids=getSelectValues(payClasses);
+  const student_id=payStudent.value, month=payMonth.value, class_ids=getCheckedValues(payClasses);
   if (!student_id || !month || !class_ids.length) return alert('Pilih siswa, kelas, dan bulan.');
   const q=await api('quoteFeesMulti',{student_id,month,class_ids});
   const pkg=Math.max(1,Number(payPkg.value||1));
@@ -331,7 +343,7 @@ btnQuote?.addEventListener('click', quotePay);
 payPkg?.addEventListener('change', ()=>{ if (payAmount.value) quotePay(); });
 
 btnPay?.addEventListener('click', async ()=>{
-  const ids=getSelectValues(payClasses);
+  const ids=getCheckedValues(payClasses);
   const pkg=Math.max(1,Number(payPkg.value||1));
   if (!payStudent.value || !payMonth.value || !ids.length) return alert('Lengkapi data.');
   const q=await api('quoteFeesMulti',{student_id:payStudent.value, month:payMonth.value, class_ids:ids});
@@ -345,18 +357,18 @@ btnPay?.addEventListener('click', async ()=>{
 
 /* Invoice */
 btnCalcInv?.addEventListener('click', async ()=>{
-  const class_ids=getSelectValues(invClasses);
+  const class_ids=getCheckedValues(invClasses);
   const data=await api('calcInvoice',{ student_id:invStudent.value, month:invMonth.value, class_ids });
   invResult.textContent=JSON.stringify(data,null,2);
 });
 btnGenInv?.addEventListener('click', async ()=>{
-  const class_ids=getSelectValues(invClasses);
+  const class_ids=getCheckedValues(invClasses);
   const res=await api('generateInvoicePdf',{ student_id:invStudent.value, month:invMonth.value, class_ids });
   alert('Invoice dibuat: '+res.fileId);
 });
 btnInvBundle?.addEventListener('click', async ()=>{
   const months=(ibMonths.value||'').split(',').map(s=>s.trim()).filter(Boolean);
-  const class_ids=getSelectValues(ibClasses);
+  const class_ids=getCheckedValues(ibClasses);
   if (!months.length) return alert('Isi bulan bundle.');
   const res=await api('generateInvoiceBundlePdf',{ student_id:invStudent.value, months, class_ids });
   alert('Invoice bundle dibuat: '+res.fileId);
@@ -365,7 +377,7 @@ btnInvBundle?.addEventListener('click', async ()=>{
 /* Kuitansi */
 btnReceipt?.addEventListener('click', async ()=>{
   const months=(rcMonths.value||'').split(',').map(s=>s.trim()).filter(Boolean);
-  const class_ids=getSelectValues(rcClasses);
+  const class_ids=getCheckedValues(rcClasses);
   const res=await api('generateReceiptPdf',{ student_id:rcStudent.value, months, class_ids });
   alert('Kuitansi dibuat: '+res.fileId);
 });
