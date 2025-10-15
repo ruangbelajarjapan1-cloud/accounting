@@ -18,6 +18,19 @@
         <div class="text-xs text-slate-500">Ruang Belajar Muslim Jepang</div>
       </div>
     </div>
+    <!-- tombol kecil di pojok kanan untuk buka config -->
+<button class="fixed top-3 right-3 rounded-full w-9 h-9 bg-slate-800 text-white" title="Config" onclick="uiToggleCfg()">⚙️</button>
+
+<!-- bar config (disembunyikan default) -->
+<div id="cfg-bar" class="card mb-3 hidden">
+  <div class="flex flex-wrap items-center gap-2">
+    <input id="endpoint-input" class="border rounded-lg px-3 py-2 w-full md:w-[520px]" placeholder="Paste URL Web App (…/exec)">
+    <button class="px-3 py-2 rounded-lg bg-sky-600 text-white" onclick="uiSetEndpoint()">Set Endpoint</button>
+    <button class="px-3 py-2 rounded-lg bg-slate-700 text-white" onclick="ping()">Ping</button>
+    <span id="endpoint-show" class="text-xs text-slate-500"></span>
+  </div>
+</div>
+
     <nav class="p-2 space-y-1 text-sm">
       <button data-page="dashboard"  class="nav w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100">🏠 Dashboard</button>
       <button data-page="students"   class="nav w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100">👨‍👩‍👧 Siswa</button>
@@ -192,9 +205,11 @@
           <input id="pay-month-modal" type="month" class="w-full border rounded-lg px-3 py-2">
         </div>
         <div class="md:col-span-2">
-          <label class="text-sm text-slate-600">Kelas (boleh pilih lebih dari satu)</label>
-          <select id="pay-classes" class="w-full border rounded-lg px-3 py-2" multiple size="6"></select>
-          <div class="text-xs text-slate-500 mt-1">Jika tidak memilih kelas apa pun, pembayaran dianggap umum (bukan per kelas).</div>
+         <!-- di dalam modal -->
+<label class="text-sm text-slate-600">Kelas (boleh pilih lebih dari satu)</label>
+<div id="pay-classes-box" class="mb-1"></div>
+<div id="pay-summary"></div>
+
         </div>
         <div>
           <label class="text-sm text-slate-600">Nominal (JPY)</label>
