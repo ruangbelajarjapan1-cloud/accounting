@@ -188,27 +188,45 @@
     </div>
   </section>
 
-  <!-- MODAL PEMBAYARAN -->
-  <div id="pay-modal" class="fixed inset-0 hidden items-center justify-center bg-black/40 z-50">
-    <div class="bg-white rounded-2xl w-[680px] max-w-[92vw] p-5">
-      <div class="flex items-center justify-between mb-3">
-        <h3 class="font-semibold">Input Pembayaran</h3>
-        <button class="text-slate-500" onclick="closePayModal()">✕</button>
+  <!-- MODAL PEMBAYARAN (di index.html) -->
+<div id="pay-modal" class="fixed inset-0 hidden items-center justify-center bg-black/40 z-50">
+  <div class="bg-white rounded-2xl w-[680px] max-w-[92vw] p-5">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="font-semibold">Input Pembayaran</h3>
+      <button class="text-slate-500" onclick="closePayModal()">✕</button>
+    </div>
+    <div class="grid md:grid-cols-2 gap-3">
+      <div>
+        <label class="text-sm text-slate-600">Siswa</label>
+        <select id="pay-student" class="w-full border rounded-lg px-3 py-2"></select>
       </div>
-      <div class="grid md:grid-cols-2 gap-3">
-        <div>
-          <label class="text-sm text-slate-600">Siswa</label>
-          <select id="pay-student" class="w-full border rounded-lg px-3 py-2"></select>
-        </div>
-        <div>
-          <label class="text-sm text-slate-600">Bulan</label>
-          <input id="pay-month-modal" type="month" class="w-full border rounded-lg px-3 py-2">
-        </div>
-        <div class="md:col-span-2">
-         <!-- di dalam modal -->
-<label class="text-sm text-slate-600">Kelas (boleh pilih lebih dari satu)</label>
-<div id="pay-classes-box" class="mb-1"></div>
-<div id="pay-summary"></div>
+      <div>
+        <label class="text-sm text-slate-600">Bulan</label>
+        <input id="pay-month-modal" type="month" class="w-full border rounded-lg px-3 py-2">
+      </div>
+      <div class="md:col-span-2">
+        <label class="text-sm text-slate-600">Kelas (boleh pilih lebih dari satu)</label>
+        <div id="pay-classes-box" class="mb-1"></div>
+        <div id="pay-summary"></div>
+      </div>
+      <div>
+        <label class="text-sm text-slate-600">Nominal (JPY)</label>
+        <input id="pay-amount" type="number" class="w-full border rounded-lg px-3 py-2" placeholder="contoh: 5000">
+      </div>
+      <div>
+        <label class="text-sm text-slate-600">Metode</label>
+        <select id="pay-method" class="w-full border rounded-lg px-3 py-2">
+          <option>Cash</option><option>Transfer</option><option>QR</option>
+        </select>
+      </div>
+    </div>
+    <div class="mt-4 flex justify-end gap-2">
+      <button class="px-3 py-2 rounded-lg bg-slate-200" onclick="closePayModal()">Batal</button>
+      <button class="px-3 py-2 rounded-lg bg-sky-600 text-white" onclick="submitPayment()">Simpan</button>
+    </div>
+  </div>
+</div>
+
 
         </div>
         <div>
