@@ -148,9 +148,7 @@
       <div class="grid" style="grid-template-columns:repeat(6,minmax(0,1fr));gap:14px">
         <div style="grid-column:span 2"><label class="label">Siswa</label><select id="invStudent" class="field select"></select></div>
         <div><label class="label">Bulan</label><input id="invMonth" type="month" class="field" /></div>
-        <div><label class="label">Kelas (opsional, multi)</label>
-          <div id="invClasses" class="checklist"></div>
-        </div>
+        <div><label class="label">Kelas (opsional, multi)</label><div id="invClasses" class="checklist"></div></div>
         <div style="grid-column:1/-1;display:flex;gap:8px;justify-content:flex-end">
           <button id="btnCalcInv" class="btn secondary">Hitung</button>
           <button id="btnGenInv" class="btn primary">Generate Invoice (1 bulan)</button>
@@ -291,16 +289,29 @@ async function init(){
   if (C2) C2.destroy();
   C2 = new Chart(payChart,{type:'bar',data:{labels:(payStats||[]).map(x=>x.month),datasets:[{label:'SPP (JPY)',data:(payStats||[]).map(x=>x.total_jpy||0)}]},
     options:{responsive:true,maintainAspectRatio:false,animation:{duration:0},plugins:{legend:{display:false}}}});
+
+  // jalankan auto-quote di awal bila data sudah cukup
+  quotePay().catch(()=>{});
 }
 
 /* ===== Pembayaran: auto hitung, rincian, & simpan per kelas ===== */
 function debounce(fn, ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms); }; }
-const autoQuote = debounce(quotePay, 200);
+const autoQuote = debounce(quotePay, 120);
 
+// trigger dari semua input relevan
 payStudent?.addEventListener('change', autoQuote);
+payStudent?.addEventListener('input',  autoQuote);
+
 payMonth?.addEventListener('change', autoQuote);
+payMonth?.addEventListener('input',  autoQuote);
+
+payPkg?.addEventListener('change', autoQuote);
 payPkg?.addEventListener('input',  autoQuote);
-payClasses?.addEventListener('change', autoQuote);
+
+// checklist kelas: beberapa browser hanya memicu 'click'
+['change','input','click'].forEach(evt=>{
+  payClasses?.addEventListener(evt, autoQuote);
+});
 
 async function quotePay(){
   const student_id = payStudent.value;
