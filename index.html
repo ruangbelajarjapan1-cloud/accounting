@@ -34,145 +34,187 @@
     </nav>
   </aside>
 
-  <main class="p-3 md:p-6">
-    <!-- Endpoint + Ping -->
-    <div class="card mb-3">
-      <div class="flex flex-wrap items-center gap-2">
-        <input id="endpoint-input" class="border rounded-lg px-3 py-2 w-full md:w-[520px]" placeholder="Paste URL Web App (…/exec)">
-        <button class="px-3 py-2 rounded-lg bg-sky-600 text-white" onclick="uiSetEndpoint()">Set Endpoint</button>
-        <button class="px-3 py-2 rounded-lg bg-slate-700 text-white" onclick="ping()">Ping</button>
-        <span id="endpoint-show" class="text-xs text-slate-500"></span>
-      </div>
+ <main class="p-3 md:p-6">
+  <!-- Endpoint + Ping -->
+  <div class="card mb-3">
+    <div class="flex flex-wrap items-center gap-2">
+      <input id="endpoint-input" class="border rounded-lg px-3 py-2 w-full md:w-[520px]" placeholder="Paste URL Web App (…/exec)">
+      <button class="px-3 py-2 rounded-lg bg-sky-600 text-white" onclick="uiSetEndpoint()">Set Endpoint</button>
+      <button class="px-3 py-2 rounded-lg bg-slate-700 text-white" onclick="ping()">Ping</button>
+      <span id="endpoint-show" class="text-xs text-slate-500"></span>
     </div>
+  </div>
 
-    <!-- Dashboard -->
-    <section id="page-dashboard" class="page">
-      <div class="grid md:grid-cols-3 gap-3">
-        <div class="card"><div class="text-sm text-slate-500">Total Siswa</div><div id="stat-students" class="text-3xl font-bold">–</div></div>
-        <div class="card"><div class="text-sm text-slate-500">Total Kelas</div><div id="stat-classes" class="text-3xl font-bold">–</div></div>
-        <div class="card"><div class="text-sm text-slate-500">Pembayaran bulan ini</div><div id="stat-payments" class="text-3xl font-bold">–</div></div>
+  <!-- Dashboard -->
+  <section id="page-dashboard" class="page">
+    <div class="grid md:grid-cols-3 gap-3">
+      <div class="card"><div class="text-sm text-slate-500">Total Siswa</div><div id="stat-students" class="text-3xl font-bold">–</div></div>
+      <div class="card"><div class="text-sm text-slate-500">Total Kelas</div><div id="stat-classes" class="text-3xl font-bold">–</div></div>
+      <div class="card"><div class="text-sm text-slate-500">Pembayaran bulan ini</div><div id="stat-payments" class="text-3xl font-bold">–</div></div>
+    </div>
+  </section>
+
+  <!-- Siswa -->
+  <section id="page-students" class="page hidden">
+    <div class="card">
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="font-semibold">Siswa</h2>
+        <button class="px-3 py-1.5 rounded-lg bg-sky-600 text-white" onclick="openStudentForm()">Tambah</button>
       </div>
-    </section>
+      <input id="search-students" placeholder="Cari nama/orang tua..." class="w-full mb-2 border rounded-lg px-3 py-2">
+      <div id="students-table" class="overflow-auto"></div>
+    </div>
+  </section>
 
-    <!-- Sisa section (Siswa, Guru, Kelas, dst) sama seperti sebelumnya -->
-    <section id="page-students" class="page hidden">
-      <div class="card">
-        <div class="flex items-center justify-between mb-2">
-          <h2 class="font-semibold">Siswa</h2>
-          <button class="px-3 py-1.5 rounded-lg bg-sky-600 text-white" onclick="openStudentForm()">Tambah</button>
-        </div>
-        <input id="search-students" placeholder="Cari nama/orang tua..." class="w-full mb-2 border rounded-lg px-3 py-2">
-        <div id="students-table" class="overflow-auto"></div>
+  <!-- Guru -->
+  <section id="page-teachers" class="page hidden">
+    <div class="card">
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="font-semibold">Guru</h2>
+        <button class="px-3 py-1.5 rounded-lg bg-sky-600 text-white" onclick="openTeacherForm()">Tambah</button>
       </div>
-    </section>
+      <div id="teachers-table"></div>
+    </div>
+  </section>
 
-    <section id="page-teachers" class="page hidden">
-      <div class="card">
-        <div class="flex items-center justify-between mb-2">
-          <h2 class="font-semibold">Guru</h2>
-          <button class="px-3 py-1.5 rounded-lg bg-sky-600 text-white" onclick="openTeacherForm()">Tambah</button>
-        </div>
-        <div id="teachers-table"></div>
+  <!-- Kelas -->
+  <section id="page-classes" class="page hidden">
+    <div class="card">
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="font-semibold">Kelas</h2>
+        <button class="px-3 py-1.5 rounded-lg bg-sky-600 text-white" onclick="openClassForm()">Tambah</button>
       </div>
-    </section>
+      <div id="classes-table"></div>
+    </div>
+  </section>
 
-    <section id="page-classes" class="page hidden">
-      <div class="card">
-        <div class="flex items-center justify-between mb-2">
-          <h2 class="font-semibold">Kelas</h2>
-          <button class="px-3 py-1.5 rounded-lg bg-sky-600 text-white" onclick="openClassForm()">Tambah</button>
-        </div>
-        <div id="classes-table"></div>
+  <!-- Enrollments -->
+  <section id="page-enrollments" class="page hidden">
+    <div class="card">
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="font-semibold">Enrollments</h2>
+        <button class="px-3 py-1.5 rounded-lg bg-sky-600 text-white" onclick="openEnrollForm()">Tambah</button>
       </div>
-    </section>
+      <div id="enrollments-table"></div>
+    </div>
+  </section>
 
-    <section id="page-enrollments" class="page hidden">
-      <div class="card">
-        <div class="flex items-center justify-between mb-2">
-          <h2 class="font-semibold">Enrollments</h2>
-          <button class="px-3 py-1.5 rounded-lg bg-sky-600 text-white" onclick="openEnrollForm()">Tambah</button>
-        </div>
-        <div id="enrollments-table"></div>
+  <!-- Absensi -->
+  <section id="page-attendance" class="page hidden">
+    <div class="card">
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="font-semibold">Absensi</h2>
+        <button class="px-3 py-1.5 rounded-lg bg-sky-600 text-white" onclick="openAttendanceForm()">Input</button>
       </div>
-    </section>
+      <div id="attendance-table"></div>
+    </div>
+  </section>
 
-    <section id="page-attendance" class="page hidden">
-      <div class="card">
-        <div class="flex items-center justify-between mb-2">
-          <h2 class="font-semibold">Absensi</h2>
-          <button class="px-3 py-1.5 rounded-lg bg-sky-600 text-white" onclick="openAttendanceForm()">Input</button>
-        </div>
-        <div id="attendance-table"></div>
-      </div>
-    </section>
-
-    <section id="page-payments" class="page hidden">
-      <div class="card">
-        <div class="flex items-center justify-between mb-2">
-          <h2 class="font-semibold">Pembayaran SPP</h2>
+  <!-- Pembayaran -->
+  <section id="page-payments" class="page hidden">
+    <div class="card">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="font-semibold">Pembayaran SPP</h2>
         <div class="flex gap-2">
           <input id="pay-month" type="month" class="border rounded-lg px-3 py-2">
-          <button class="px-3 py-1.5 rounded-lg bg-sky-600 text-white" onclick="openPaymentForm()">Bayar</button>
+          <button class="px-3 py-1.5 rounded-lg bg-sky-600 text-white" onclick="openPaymentModal()">Bayar</button>
         </div>
-        </div>
-        <div id="payments-table"></div>
       </div>
-    </section>
+      <div id="payments-table"></div>
+    </div>
+  </section>
 
-    <section id="page-invoices" class="page hidden">
-      <div class="card">
-        <div class="flex items-center justify-between mb-2">
-          <h2 class="font-semibold">Invoice & Kwitansi</h2>
-          <div class="flex gap-2">
-            <input id="inv-month" type="month" class="border rounded-lg px-3 py-2">
-            <button class="px-3 py-1.5 rounded-lg bg-sky-600 text-white" onclick="generateInvoices()">Generate Invoice Bulanan</button>
-          </div>
+  <!-- Invoice -->
+  <section id="page-invoices" class="page hidden">
+    <div class="card">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="font-semibold">Invoice & Kwitansi</h2>
+        <div class="flex gap-2">
+          <input id="inv-month" type="month" class="border rounded-lg px-3 py-2">
+          <button class="px-3 py-1.5 rounded-lg bg-sky-600 text-white" onclick="generateInvoices()">Generate Invoice Bulanan</button>
         </div>
-        <div id="invoices-table"></div>
       </div>
-    </section>
+      <div id="invoices-table"></div>
+    </div>
+  </section>
 
-    <section id="page-mukafaah" class="page hidden">
-      <div class="card">
-        <div class="flex items-center justify-between mb-2">
-          <h2 class="font-semibold">Mukafaah Guru (70%)</h2>
-          <div class="flex gap-2">
-            <input id="muka-month" type="month" class="border rounded-lg px-3 py-2">
-            <button class="px-3 py-1.5 rounded-lg bg-sky-600 text-white" onclick="loadMukafaah()">Hitung</button>
-          </div>
+  <!-- Mukafaah -->
+  <section id="page-mukafaah" class="page hidden">
+    <div class="card">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="font-semibold">Mukafaah Guru (70%)</h2>
+        <div class="flex gap-2">
+          <input id="muka-month" type="month" class="border rounded-lg px-3 py-2">
+          <button class="px-3 py-1.5 rounded-lg bg-sky-600 text-white" onclick="loadMukafaah()">Hitung</button>
         </div>
-        <div id="mukafaah-table"></div>
       </div>
-    </section>
+      <div id="mukafaah-table"></div>
+    </div>
+  </section>
 
-    <section id="page-expenses" class="page hidden">
-      <div class="card">
-        <div class="flex items-center justify-between mb-2">
-          <h2 class="font-semibold">Pengeluaran</h2>
-          <button class="px-3 py-1.5 rounded-lg bg-sky-600 text-white" onclick="openExpenseForm()">Tambah</button>
+  <!-- Pengeluaran -->
+  <section id="page-expenses" class="page hidden">
+    <div class="card">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="font-semibold">Pengeluaran</h2>
+        <button class="px-3 py-1.5 rounded-lg bg-sky-600 text-white" onclick="openExpenseForm()">Tambah</button>
+      </div>
+      <div id="expenses-table"></div>
+    </div>
+  </section>
+
+  <!-- Kas -->
+  <section id="page-cashbook" class="page hidden">
+    <div class="card">
+      <h2 class="font-semibold mb-2">Buku Kas Bulanan</h2>
+      <div class="flex gap-2 mb-2">
+        <input id="cash-month" type="month" class="border rounded-lg px-3 py-2">
+        <button class="px-3 py-1.5 rounded-lg bg-sky-600 text-white" onclick="loadCashbook()">Muat</button>
+      </div>
+      <div id="cashbook-table"></div>
+    </div>
+  </section>
+
+  <!-- MODAL PEMBAYARAN -->
+  <div id="pay-modal" class="fixed inset-0 hidden items-center justify-center bg-black/40 z-50">
+    <div class="bg-white rounded-2xl w-[680px] max-w-[92vw] p-5">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-semibold">Input Pembayaran</h3>
+        <button class="text-slate-500" onclick="closePayModal()">✕</button>
+      </div>
+      <div class="grid md:grid-cols-2 gap-3">
+        <div>
+          <label class="text-sm text-slate-600">Siswa</label>
+          <select id="pay-student" class="w-full border rounded-lg px-3 py-2"></select>
         </div>
-        <div id="expenses-table"></div>
-      </div>
-    </section>
-
-    <section id="page-cashbook" class="page hidden">
-      <div class="card">
-        <h2 class="font-semibold mb-2">Buku Kas Bulanan</h2>
-        <div class="flex gap-2 mb-2">
-          <input id="cash-month" type="month" class="border rounded-lg px-3 py-2">
-          <button class="px-3 py-1.5 rounded-lg bg-sky-600 text-white" onclick="loadCashbook()">Muat</button>
+        <div>
+          <label class="text-sm text-slate-600">Bulan</label>
+          <input id="pay-month-modal" type="month" class="w-full border rounded-lg px-3 py-2">
         </div>
-        <div id="cashbook-table"></div>
+        <div class="md:col-span-2">
+          <label class="text-sm text-slate-600">Kelas (boleh pilih lebih dari satu)</label>
+          <select id="pay-classes" class="w-full border rounded-lg px-3 py-2" multiple size="6"></select>
+          <div class="text-xs text-slate-500 mt-1">Jika tidak memilih kelas apa pun, pembayaran dianggap umum (bukan per kelas).</div>
+        </div>
+        <div>
+          <label class="text-sm text-slate-600">Nominal (JPY)</label>
+          <input id="pay-amount" type="number" class="w-full border rounded-lg px-3 py-2" placeholder="contoh: 5000">
+        </div>
+        <div>
+          <label class="text-sm text-slate-600">Metode</label>
+          <select id="pay-method" class="w-full border rounded-lg px-3 py-2">
+            <option>Cash</option><option>Transfer</option><option>QR</option>
+          </select>
+        </div>
       </div>
-    </section>
+      <div class="mt-4 flex justify-end gap-2">
+        <button class="px-3 py-2 rounded-lg bg-slate-200" onclick="closePayModal()">Batal</button>
+        <button class="px-3 py-2 rounded-lg bg-sky-600 text-white" onclick="submitPayment()">Simpan</button>
+      </div>
+    </div>
+  </div>
+</main>
 
-    <section id="page-reports" class="page hidden">
-      <div class="card">
-        <h2 class="font-semibold mb-2">Rekapan</h2>
-        <div id="reports-area"></div>
-      </div>
-    </section>
-  </main>
 </div>
 
 <script src="./app.js"></script>
