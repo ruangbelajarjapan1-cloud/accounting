@@ -6,16 +6,13 @@
   <title>RBMJ — Admin</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://unpkg.com/lucide-static@0.321.0/font/lucide.css" rel="stylesheet">
-  <link rel="icon" href="favicon.ico">
-  <style>
-    .card{ border-radius:16px; background:#fff; box-shadow:0 6px 18px rgba(2,6,23,.08); padding:16px }
-  </style>
+  <style>.card{border-radius:16px;background:#fff;box-shadow:0 6px 18px rgba(2,6,23,.08);padding:16px}</style>
 </head>
 <body class="bg-slate-50 text-slate-900">
 <div class="min-h-screen grid grid-cols-1 md:grid-cols-[260px_1fr]">
   <aside class="bg-white border-r hidden md:flex flex-col">
     <div class="p-4 flex items-center gap-3 border-b">
-      <div class="w-10 h-10 bg-sky-500 rounded-xl"></div>
+      <img id="ui-logo" class="w-10 h-10 rounded-xl object-cover" alt="Logo">
       <div>
         <div class="font-bold">RBMJ Admin</div>
         <div class="text-xs text-slate-500">Ruang Belajar Muslim Jepang</div>
@@ -38,6 +35,16 @@
   </aside>
 
   <main class="p-3 md:p-6">
+    <!-- Endpoint + Ping -->
+    <div class="card mb-3">
+      <div class="flex flex-wrap items-center gap-2">
+        <input id="endpoint-input" class="border rounded-lg px-3 py-2 w-full md:w-[520px]" placeholder="Paste URL Web App (…/exec)">
+        <button class="px-3 py-2 rounded-lg bg-sky-600 text-white" onclick="uiSetEndpoint()">Set Endpoint</button>
+        <button class="px-3 py-2 rounded-lg bg-slate-700 text-white" onclick="ping()">Ping</button>
+        <span id="endpoint-show" class="text-xs text-slate-500"></span>
+      </div>
+    </div>
+
     <!-- Dashboard -->
     <section id="page-dashboard" class="page">
       <div class="grid md:grid-cols-3 gap-3">
@@ -47,7 +54,7 @@
       </div>
     </section>
 
-    <!-- Siswa -->
+    <!-- Sisa section (Siswa, Guru, Kelas, dst) sama seperti sebelumnya -->
     <section id="page-students" class="page hidden">
       <div class="card">
         <div class="flex items-center justify-between mb-2">
@@ -59,7 +66,6 @@
       </div>
     </section>
 
-    <!-- Guru -->
     <section id="page-teachers" class="page hidden">
       <div class="card">
         <div class="flex items-center justify-between mb-2">
@@ -70,7 +76,6 @@
       </div>
     </section>
 
-    <!-- Kelas -->
     <section id="page-classes" class="page hidden">
       <div class="card">
         <div class="flex items-center justify-between mb-2">
@@ -81,7 +86,6 @@
       </div>
     </section>
 
-    <!-- Enrollments -->
     <section id="page-enrollments" class="page hidden">
       <div class="card">
         <div class="flex items-center justify-between mb-2">
@@ -92,7 +96,6 @@
       </div>
     </section>
 
-    <!-- Absensi -->
     <section id="page-attendance" class="page hidden">
       <div class="card">
         <div class="flex items-center justify-between mb-2">
@@ -103,21 +106,19 @@
       </div>
     </section>
 
-    <!-- Pembayaran -->
     <section id="page-payments" class="page hidden">
       <div class="card">
         <div class="flex items-center justify-between mb-2">
           <h2 class="font-semibold">Pembayaran SPP</h2>
-          <div class="flex gap-2">
-            <input id="pay-month" type="month" class="border rounded-lg px-3 py-2">
-            <button class="px-3 py-1.5 rounded-lg bg-sky-600 text-white" onclick="openPaymentForm()">Bayar</button>
-          </div>
+        <div class="flex gap-2">
+          <input id="pay-month" type="month" class="border rounded-lg px-3 py-2">
+          <button class="px-3 py-1.5 rounded-lg bg-sky-600 text-white" onclick="openPaymentForm()">Bayar</button>
+        </div>
         </div>
         <div id="payments-table"></div>
       </div>
     </section>
 
-    <!-- Invoice -->
     <section id="page-invoices" class="page hidden">
       <div class="card">
         <div class="flex items-center justify-between mb-2">
@@ -131,7 +132,6 @@
       </div>
     </section>
 
-    <!-- Mukafaah -->
     <section id="page-mukafaah" class="page hidden">
       <div class="card">
         <div class="flex items-center justify-between mb-2">
@@ -145,7 +145,6 @@
       </div>
     </section>
 
-    <!-- Pengeluaran -->
     <section id="page-expenses" class="page hidden">
       <div class="card">
         <div class="flex items-center justify-between mb-2">
@@ -156,7 +155,6 @@
       </div>
     </section>
 
-    <!-- Kas -->
     <section id="page-cashbook" class="page hidden">
       <div class="card">
         <h2 class="font-semibold mb-2">Buku Kas Bulanan</h2>
@@ -168,7 +166,6 @@
       </div>
     </section>
 
-    <!-- Rekapan -->
     <section id="page-reports" class="page hidden">
       <div class="card">
         <h2 class="font-semibold mb-2">Rekapan</h2>
