@@ -2,177 +2,303 @@
 <html lang="id">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>RBMJ — Admin</title>
+  <link rel="icon" href="data:,">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    :root{--bg:#f8fafc;--card:#fff;--muted:#64748b;--ink:#0f172a;--sky:#0369a1;}
-    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,Segoe UI,Roboto,Inter,Arial}
-    .app{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
-    aside{background:#fff;border-right:1px solid #e2e8f0;padding:14px}
-    .brand{display:flex;gap:10px;align-items:center;margin-bottom:8px}
-    .brand img{width:36px;height:36px;border-radius:10px;background:#e2e8f0;object-fit:cover}
-    .navs button{display:flex;gap:8px;align-items:center;width:100%;padding:8px 10px;border-radius:10px;border:0;background:transparent;cursor:pointer}
-    .navs button:hover{background:#f1f5f9}
-    main{padding:16px}
-    .cards{display:grid;grid-template-columns:repeat(3,minmax(220px,1fr));gap:12px}
-    .card{background:var(--card);border:1px solid #e2e8f0;border-radius:14px;padding:14px}
-    .card h4{margin:0;font-size:12px;color:var(--muted)}
-    .card .num{font-size:28px;font-weight:700;margin-top:6px}
-    .toolbar{display:flex;gap:8px;align-items:center;margin:10px 0}
-    .btn{padding:8px 12px;border-radius:10px;border:1px solid #cbd5e1;background:#fff;cursor:pointer}
-    .btn.sky{background:var(--sky);border-color:var(--sky);color:#fff}
-    table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #e2e8f0;border-radius:14px;overflow:hidden}
-    th,td{padding:10px;border-top:1px solid #e2e8f0;text-align:left}
-    thead th{background:#f8fafc;border-top:0;font-weight:600}
-    .hidden{display:none}
-    /* modal */
-    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.45);z-index:50}
-    .modal .panel{background:#fff;border-radius:16px;max-width:700px;width:92vw;padding:16px}
-    .grid{display:grid;gap:10px}
-    .g2{grid-template-columns:1fr 1fr}
-    .field{display:flex;flex-direction:column;gap:6px}
-    .field label{font-size:12px;color:var(--muted)}
-    .field input,.field select,.field textarea{padding:8px 10px;border:1px solid #cbd5e1;border-radius:10px}
-    .pay-classes{max-height:220px;overflow:auto;border:1px solid #e2e8f0;border-radius:10px;padding:8px}
-    .summary{border:1px dashed #cbd5e1;border-radius:10px;padding:8px;background:#f8fafc}
+    :root{
+      --bg:#0b1020; --card:#111933; --muted:#8aa0c8; --text:#eaf0ff;
+      --brand:#4aa3ff; --brand-2:#7cf0da; --danger:#ff6b6b; --ok:#22c55e;
+      --ring: 0 0 0 3px rgba(122, 200, 255, .35);
+      --shadow: 0 10px 40px rgba(8,15,35,.35), 0 2px 8px rgba(8,15,35,.2);
+      --radius: 18px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:Inter,system-ui,Segoe UI,Roboto,Noto Sans,sans-serif;
+      color:var(--text); background:
+        radial-gradient(1200px 700px at 80% -10%, rgba(124,240,218,.10), transparent 60%),
+        radial-gradient(900px 600px at -10% 10%, rgba(74,163,255,.12), transparent 60%),
+        linear-gradient(180deg, #0a0f1e 0%, #0b1020 100%);
+    }
+    .container{max-width:1100px;margin:48px auto;padding:0 20px}
+    .header{
+      display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;
+    }
+    .brand{
+      display:flex;align-items:center;gap:12px;font-weight:700;font-size:20px;
+      letter-spacing:.2px;
+    }
+    .brand .dot{width:12px;height:12px;border-radius:50%;
+      background: radial-gradient(circle at 30% 30%, var(--brand-2), var(--brand));
+      box-shadow:0 0 24px rgba(124,240,218,.6), 0 0 14px rgba(74,163,255,.6);
+    }
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border:1px solid rgba(154,172,220,.18);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+      overflow:hidden;
+    }
+    .card .head{
+      padding:18px 20px;border-bottom:1px solid rgba(154,172,220,.16);
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+    }
+    .badge{padding:6px 10px;border-radius:999px;font-size:12px;color:#051026;
+      background:linear-gradient(180deg, var(--brand-2), var(--brand)); font-weight:700;}
+    .grid{
+      display:grid; gap:14px; padding:20px;
+      grid-template-columns: repeat(12, 1fr);
+    }
+    .col-6{grid-column: span 6}
+    .col-12{grid-column: span 12}
+    @media (max-width: 840px){ .col-6{grid-column: span 12} }
+    label{font-size:13px;color:var(--muted);display:block;margin:4px 0 6px}
+    .input, .select, .textarea{
+      width:100%; padding:12px 14px; border-radius:12px;
+      border:1px solid rgba(164,182,220,.25);
+      background:rgba(10,16,36,.55); color:var(--text); outline:none;
+    }
+    .input:focus, .select:focus, .textarea:focus{ box-shadow: var(--ring); border-color:rgba(124,240,218,.7) }
+    .textarea{min-height:92px; resize:vertical}
+    .list{
+      max-height:280px; overflow:auto; padding:10px;border-radius:12px;
+      border:1px solid rgba(164,182,220,.25); background:rgba(10,16,36,.55);
+    }
+    .list label{display:flex;align-items:center;gap:10px;margin:0;padding:8px 10px;border-radius:10px}
+    .list label:hover{background:rgba(255,255,255,.04)}
+    .muted{color:var(--muted)}
+    .total{font-size:28px;font-weight:800;letter-spacing:.3px}
+    .actions{display:flex;gap:10px;flex-wrap:wrap}
+    .btn{
+      border:none;border-radius:12px;padding:11px 14px;font-weight:700;cursor:pointer;
+      background:#1a244a;color:var(--text); transition:.2s ease box-shadow, .2s ease transform, .2s ease background;
+    }
+    .btn:hover{transform:translateY(-1px)}
+    .btn:focus{box-shadow: var(--ring)}
+    .btn-primary{background: linear-gradient(180deg, var(--brand), #2676ff)}
+    .btn-outline{background:transparent;border:1px solid rgba(164,182,220,.35)}
+    .btn-ok{background: linear-gradient(180deg, #28d17c, #11a65a)}
+    .btn-danger{background: linear-gradient(180deg, #ff8c8c, #ff6b6b)}
+    .footer-note{font-size:12px;color:var(--muted);padding:12px 20px;border-top:1px dashed rgba(160,180,220,.25)}
+    .divider{height:1px;background:linear-gradient(90deg, rgba(154,172,220,0), rgba(154,172,220,.35), rgba(154,172,220,0)); margin:8px 0 14px}
   </style>
 </head>
 <body>
-<div class="app">
-  <aside>
-    <div class="brand">
-      <img id="ui-logo" src="https://via.placeholder.com/80x80.png?text=RBMJ" alt="logo">
-      <div>
-        <div style="font-weight:700">RBMJ Admin</div>
-        <div style="font-size:12px;color:#64748b">Ruang Belajar Muslim Jepang</div>
+  <div class="container">
+    <div class="header">
+      <div class="brand">
+        <span class="dot"></span> RBMJ — Admin
       </div>
-    </div>
-    <div class="navs">
-      <button class="nav" data-page="dashboard">🏠 Dashboard</button>
-      <button class="nav" data-page="students">🧒 Siswa</button>
-      <button class="nav" data-page="teachers">👩‍🏫 Guru</button>
-      <button class="nav" data-page="classes">🏫 Kelas</button>
-      <button class="nav" data-page="enrollments">🧩 Enrollments</button>
-      <button class="nav" data-page="attendance">📝 Absensi</button>
-      <button class="nav" data-page="payments">💳 Pembayaran</button>
-      <button class="nav" data-page="invoices">🧾 Invoice & Kwitansi</button>
-      <button class="nav" data-page="mukafaah">💠 Mukafaah Guru</button>
-      <button class="nav" data-page="expenses">📦 Pengeluaran</button>
-      <button class="nav" data-page="cashbook">📊 Buku Kas</button>
-    </div>
-  </aside>
-
-  <main>
-    <!-- DASHBOARD -->
-    <section id="page-dashboard" class="page">
-      <div class="cards">
-        <div class="card"><h4>Total Siswa</h4><div id="stat-students" class="num">—</div></div>
-        <div class="card"><h4>Total Kelas</h4><div id="stat-classes" class="num">—</div></div>
-        <div class="card"><h4>Pembayaran bulan ini</h4><div id="stat-payments" class="num">—</div></div>
-      </div>
-    </section>
-
-    <!-- SISWA -->
-    <section id="page-students" class="page hidden">
-      <div class="toolbar"><button class="btn" onclick="openStudentForm()">Tambah Siswa</button></div>
-      <div id="students-table"></div>
-    </section>
-
-    <!-- GURU -->
-    <section id="page-teachers" class="page hidden">
-      <div class="toolbar"><button class="btn" onclick="openTeacherForm()">Tambah Guru</button></div>
-      <div id="teachers-table"></div>
-    </section>
-
-    <!-- KELAS -->
-    <section id="page-classes" class="page hidden">
-      <div class="toolbar"><button class="btn" onclick="openClassForm()">Tambah Kelas</button></div>
-      <div id="classes-table"></div>
-    </section>
-
-    <!-- ENROLLMENTS -->
-    <section id="page-enrollments" class="page hidden">
-      <div class="toolbar"><button class="btn" onclick="openEnrollForm()">Enroll</button></div>
-      <div id="enrollments-table"></div>
-    </section>
-
-    <!-- ABSENSI -->
-    <section id="page-attendance" class="page hidden">
-      <div class="toolbar"><button class="btn" onclick="openAttendanceForm()">Input Absensi</button></div>
-      <div id="attendance-table"></div>
-    </section>
-
-    <!-- PEMBAYARAN -->
-    <section id="page-payments" class="page hidden">
-      <div class="toolbar">
-        <input id="pay-month" type="month" class="btn" onchange="loadPayments()">
-        <button class="btn sky" onclick="openPaymentModal()">Bayar</button>
-      </div>
-      <div id="payments-table"></div>
-      <!-- di footer modal -->
-<button id="btn-receipt-print" class="btn btn-outline">Cetak kwitansi</button>
-<button id="btn-receipt-save"  class="btn btn-primary">Simpan kwitansi (PDF)</button>
-
-    </section>
-
-    <!-- INVOICE -->
-    <section id="page-invoices" class="page hidden">
-      <div class="toolbar">
-        <input id="inv-month" type="month" class="btn" onchange="loadInvoices()">
-        <button class="btn sky" onclick="generateInvoices()">Generate Invoice Bulanan</button>
-      </div>
-      <div id="invoices-table"></div>
-    </section>
-
-    <!-- MUKAFAAH -->
-    <section id="page-mukafaah" class="page hidden">
-      <div class="toolbar"><input id="muka-month" type="month" class="btn" onchange="loadMukafaah()"></div>
-      <div id="mukafaah-table"></div>
-    </section>
-
-    <!-- PENGELUARAN -->
-    <section id="page-expenses" class="page hidden">
-      <div class="toolbar"><button class="btn" onclick="openExpenseForm()">Tambah Pengeluaran</button></div>
-      <div id="expenses-table"></div>
-    </section>
-
-    <!-- CASHBOOK -->
-    <section id="page-cashbook" class="page hidden">
-      <div class="toolbar"><input id="cash-month" type="month" class="btn" onchange="loadCashbook()"></div>
-      <div id="cashbook-table"></div>
-    </section>
-  </main>
-</div>
-
-<!-- MODAL PEMBAYARAN -->
-<div id="pay-modal" class="modal">
-  <div class="panel">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-      <div style="font-weight:600">Input Pembayaran</div>
-      <button class="btn" onclick="closePayModal()">✕</button>
+      <span class="badge">Accounting • v2025.10</span>
     </div>
 
-    <div class="grid g2">
-      <div class="field"><label>Siswa</label><select id="pay-student"></select></div>
-      <div class="field"><label>Bulan</label><input id="pay-month-modal" type="month"></div>
-      <div class="field" style="grid-column:1/-1">
-        <label>Kelas (boleh pilih lebih dari satu)</label>
-        <div id="pay-classes-box" class="pay-classes"></div>
-        <div id="pay-summary" class="summary" style="margin-top:8px"></div>
+    <!-- KARTU PEMBAYARAN -->
+    <div class="card" id="payment-card">
+      <div class="head">
+        <div>
+          <div style="font-weight:800">Input Pembayaran</div>
+          <div class="muted" style="font-size:12px">Pilih siswa, bulan, dan kelas. Total & nominal terisi otomatis.</div>
+        </div>
+        <div class="actions">
+          <button id="btn-receipt-print" class="btn btn-outline">Cetak kwitansi</button>
+          <button id="btn-receipt-save" class="btn btn-outline">Simpan kwitansi (PDF)</button>
+          <button id="btn-save-payment" class="btn btn-primary">Simpan</button>
+        </div>
       </div>
-      <div class="field"><label>Nominal (JPY)</label><input id="pay-amount" type="number" placeholder="contoh: 5000"></div>
-      <div class="field"><label>Metode</label>
-        <select id="pay-method"><option>Cash</option><option>Transfer</option><option>QR</option></select>
-      </div>
-    </div>
 
-    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px">
-      <button class="btn" onclick="closePayModal()">Batal</button>
-      <button class="btn sky" onclick="submitPayment()">Simpan</button>
+      <div class="grid">
+        <div class="col-6">
+          <label for="pay-student">Siswa</label>
+          <select id="pay-student" class="select">
+            <!-- diisi oleh JS -->
+          </select>
+        </div>
+        <div class="col-6">
+          <label for="pay-month">Bulan</label>
+          <input id="pay-month" class="input" type="month" value="2025-09" />
+        </div>
+
+        <div class="col-12">
+          <label>Kelas (boleh pilih lebih dari satu)</label>
+          <div id="class-list" class="list">
+            <!-- diisi oleh JS -->
+          </div>
+        </div>
+
+        <div class="col-12">
+          <div class="divider"></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+            <div>
+              <div class="muted" style="font-size:12px;margin-bottom:6px">Total</div>
+              <div id="total" class="total">¥0</div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap">
+              <div>
+                <label for="pay-amount">Nominal (JPY)</label>
+                <input id="pay-amount" class="input" type="number" value="0" min="0" step="1">
+              </div>
+              <div>
+                <label for="pay-method">Metode</label>
+                <select id="pay-method" class="select">
+                  <option>Cash</option>
+                  <option>Transfer</option>
+                  <option>QR/Pay</option>
+                  <option>Other</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12">
+          <label for="pay-notes">Catatan</label>
+          <textarea id="pay-notes" class="textarea" placeholder="Opsional: keterangan tambahan…"></textarea>
+        </div>
+      </div>
+
+      <div class="footer-note">
+        Tip: setelah klik <b>Simpan</b>, gunakan <b>Cetak kwitansi</b> atau <b>Simpan kwitansi (PDF)</b>.
+      </div>
     </div>
   </div>
-</div>
 
-<script src="app.js"></script>
+  <script>
+  /* ==========================================================
+   * RBMJ Admin – Frontend (GitHub Pages)
+   * Versi: 2025-10 – JSONP + Cetak & Simpan Kwitansi
+   * ========================================================== */
+
+  // GANTI dengan URL Web App Apps Script (deployment "Anyone")
+  const GAS_URL = 'PASTE_CURRENT_WEB_APP_URL';
+
+  /* ---------- UTIL JSONP ---------- */
+  function jsonp(url, params = {}) {
+    return new Promise((resolve, reject) => {
+      const cb = 'cb_' + Math.random().toString(36).slice(2);
+      params.callback = cb;
+      const qs = Object.entries(params)
+        .map(([k, v]) => encodeURIComponent(k) + '=' + encodeURIComponent(v))
+        .join('&');
+      const script = document.createElement('script');
+      script.src = url + '?' + qs;
+      let done = false;
+      window[cb] = data => { done = true; resolve(data); cleanup(); };
+      script.onerror = () => { reject(new Error('JSONP failed')); cleanup(); };
+      function cleanup(){ delete window[cb]; script.remove(); }
+      document.body.appendChild(script);
+      setTimeout(()=>{ if(!done){ reject(new Error('JSONP timeout')); cleanup(); } }, 15000);
+    });
+  }
+
+  /* ---------- DOM ELEMENTS ---------- */
+  const elSiswa   = document.querySelector('#pay-student');
+  const elMonth   = document.querySelector('#pay-month');
+  const elClassList = document.querySelector('#class-list');
+  const elTotal   = document.querySelector('#total');
+  const elNominal = document.querySelector('#pay-amount');
+  const elMethod  = document.querySelector('#pay-method');
+  const elSave    = document.querySelector('#btn-save-payment');
+  const elPrint   = document.querySelector('#btn-receipt-print');
+  const elPdf     = document.querySelector('#btn-receipt-save');
+
+  /* ---------- INIT LOAD ---------- */
+  window.addEventListener('DOMContentLoaded', async () => {
+    await loadStudents();
+    await loadClasses();
+  });
+
+  /* ---------- LOAD STUDENTS (dummy contoh) ---------- */
+  async function loadStudents(){
+    elSiswa.innerHTML = `
+      <option value="1">Luay Abdussalam Azzayan — (1)</option>
+      <option value="2">Ummu Khayla — (2)</option>
+    `;
+  }
+
+  /* ---------- LOAD CLASSES dari GAS ---------- */
+  async function loadClasses(){
+    try{
+      const res = await jsonp(GAS_URL, { route:'listClasses' });
+      if(!res.ok) throw new Error(res.error||'Gagal ambil kelas');
+      elClassList.innerHTML = (res.data||[]).map(c => `
+        <label>
+          <input type="checkbox" class="class-checkbox" value="${c.id}" data-fee="${c.monthly_fee_jpy}">
+          <span>${c.class_name}</span>
+          <span class="muted"> — ¥${Number(c.monthly_fee_jpy||0).toLocaleString('ja-JP')}</span>
+        </label>
+      `).join('') || '<div class="muted">Belum ada data kelas.</div>';
+
+      elClassList.addEventListener('change', calcTotal);
+    }catch(err){
+      console.error(err);
+      elClassList.innerHTML = '<div class="muted">Gagal memuat kelas (cek GAS_URL & WebApp access).</div>';
+    }
+  }
+
+  /* ---------- HITUNG TOTAL OTOMATIS ---------- */
+  function calcTotal(){
+    const boxes = elClassList.querySelectorAll('.class-checkbox:checked');
+    let sum = 0; boxes.forEach(b => sum += Number(b.dataset.fee||0));
+    elTotal.textContent = '¥' + sum.toLocaleString('ja-JP');
+    elNominal.value = sum;
+  }
+
+  /* ---------- KUMPULKAN DATA ---------- */
+  function collectPaymentForm(){
+    const student_id = elSiswa.value;
+    const month      = elMonth.value || elMonth.dataset.value || '2025-09';
+    const class_ids  = Array.from(document.querySelectorAll('.class-checkbox:checked')).map(x=>x.value);
+    const amount_jpy = Number(elNominal.value || 0);
+    const method     = elMethod.value || 'Cash';
+    const notes      = document.querySelector('#pay-notes')?.value || '';
+    return { student_id, month, class_ids: class_ids.join(','), amount_jpy, method, notes };
+  }
+
+  /* ---------- SIMPAN PEMBAYARAN ---------- */
+  elSave?.addEventListener('click', async ()=>{
+    try{
+      const p = collectPaymentForm();
+      const res = await jsonp(GAS_URL, { route:'recordPayment', ...p });
+      if(!res.ok) throw new Error(res.error||'Gagal simpan');
+      alert('✅ Pembayaran tersimpan.');
+    }catch(err){
+      alert('❌ JSONP failed: ' + err.message);
+    }
+  });
+
+  /* ---------- CETAK KWITANSI ---------- */
+  elPrint?.addEventListener('click', async ()=>{
+    try{
+      const p = collectPaymentForm();
+      const res = await jsonp(GAS_URL, { route:'receiptPreview', ...p });
+      if(!res.ok) throw new Error(res.error||'Gagal preview');
+      const w = window.open('', '_blank', 'width=900,height=800');
+      w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Kwitansi</title></head><body>${res.data.html}<script>window.onload=function(){window.print();}<\\/script></body></html>`);
+      w.document.close();
+    }catch(err){
+      alert('❌ JSONP failed: ' + err.message);
+    }
+  });
+
+  /* ---------- SIMPAN PDF KE DRIVE ---------- */
+  elPdf?.addEventListener('click', async ()=>{
+    try{
+      const p = collectPaymentForm();
+      const res = await jsonp(GAS_URL, { route:'receiptSavePdf', ...p });
+      if(!res.ok) throw new Error(res.error||'Gagal simpan PDF');
+      if(res.data && res.data.url){
+        if(confirm('✅ PDF tersimpan di Google Drive.\nBuka sekarang?')) window.open(res.data.url,'_blank');
+      }else{
+        alert('PDF tersimpan (URL tidak tersedia).');
+      }
+    }catch(err){
+      alert('❌ JSONP failed: ' + err.message);
+    }
+  });
+  </script>
 </body>
 </html>
