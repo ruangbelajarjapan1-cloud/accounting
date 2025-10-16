@@ -25,7 +25,6 @@ const api = (a,p)=>jsonp(a,p);
 function qs(id){return document.getElementById(id);}
 function show(page){document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden')); qs('page-'+page).classList.remove('hidden');}
 document.querySelectorAll('.nav').forEach(b=> b.onclick = ()=> show(b.dataset.page));
-
 function loadLogo(){ const u=localStorage.getItem('rbmj_logo'); const img=document.getElementById('ui-logo'); if(img) img.src=u||'https://via.placeholder.com/80x80.png?text=RBMJ'; }
 loadLogo();
 
@@ -66,11 +65,11 @@ function openStudentForm(row={}){
 }
 function loadStudents(){
   const d=CACHE.students;
-  const h=[`<table class="min-w-full text-sm"><thead><tr class="text-left">
-    <th class="p-2">ID</th><th class="p-2">Nama</th><th class="p-2">Family</th><th class="p-2">Ortu</th><th class="p-2">Kontak</th><th class="p-2">Status</th><th class="p-2"></th></tr></thead><tbody>`,
-    ...d.map(r=>`<tr class="border-t"><td class="p-2">${r.id}</td><td class="p-2">${r.full_name}</td><td class="p-2">${r.family_key||''}</td>
-      <td class="p-2">${r.parent_name||''}</td><td class="p-2">${r.parent_phone||''}<br>${r.email||''}</td>
-      <td class="p-2">${r.status||''}</td><td class="p-2"><button class="text-sky-700" onclick='openStudentForm(${JSON.stringify(r)})'>Edit</button></td></tr>`),
+  const h=[`<table><thead><tr>
+    <th>ID</th><th>Nama</th><th>Family</th><th>Ortu</th><th>Kontak</th><th>Status</th><th></th></tr></thead><tbody>`,
+    ...d.map(r=>`<tr><td>${r.id}</td><td>${r.full_name}</td><td>${r.family_key||''}</td>
+      <td>${r.parent_name||''}</td><td>${r.parent_phone||''}<br>${r.email||''}</td>
+      <td>${r.status||''}</td><td><button class="btn" onclick='openStudentForm(${JSON.stringify(r)})'>Edit</button></td></tr>`),
     `</tbody></table>`];
   qs('students-table').innerHTML=h.join('');
 }
@@ -83,9 +82,10 @@ function openTeacherForm(row={}){ const full=prompt('Nama lengkap',row.full_name
 }
 function loadTeachers(){
   const d=CACHE.teachers;
-  const h=[`<table class="min-w-full text-sm"><thead><tr class="text-left">
-    <th class="p-2">ID</th><th class="p-2">Nama</th><th class="p-2">Kontak</th><th class="p-2">Status</th><th class="p-2"></th></tr></thead><tbody>`,
-    ...d.map(r=>`<tr class="border-t"><td class="p-2">${r.id}</td><td class="p-2">${r.full_name}</td><td class="p-2">${r.phone||''}<br>${r.email||''}</td><td class="p-2">${r.status||''}</td><td class="p-2"><button class="text-sky-700" onclick='openTeacherForm(${JSON.stringify(r)})'>Edit</button></td></tr>`),
+  const h=[`<table><thead><tr><th>ID</th><th>Nama</th><th>Kontak</th><th>Status</th><th></th></tr></thead><tbody>`,
+    ...d.map(r=>`<tr><td>${r.id}</td><td>${r.full_name}</td>
+      <td>${r.phone||''}<br>${r.email||''}</td><td>${r.status||''}</td>
+      <td><button class="btn" onclick='openTeacherForm(${JSON.stringify(r)})'>Edit</button></td></tr>`),
     `</tbody></table>`];
   qs('teachers-table').innerHTML=h.join('');
 }
@@ -98,12 +98,12 @@ function openClassForm(row={}){ const name=prompt('Nama kelas',row.class_name||'
     .then(refreshCache).then(loadClasses).catch(e=>alert(e.message));
 }
 function loadClasses(){
-  const d=CACHE.classes, h=[`<table class="min-w-full text-sm"><thead><tr class="text-left">
-    <th class="p-2">ID</th><th class="p-2">Nama</th><th class="p-2">Guru</th><th class="p-2">SPP</th><th class="p-2">Jadwal</th><th class="p-2">Status</th><th class="p-2"></th></tr></thead><tbody>`,
-    ...d.map(r=>`<tr class="border-t"><td class="p-2">${r.id}</td><td class="p-2">${r.class_name}</td>
-      <td class="p-2">${nameOfTeacher(r.teacher_id)}</td><td class="p-2">¥${r.monthly_fee_jpy}</td>
-      <td class="p-2">${r.day_of_week} ${r.time||''}</td><td class="p-2">${r.status||''}</td>
-      <td class="p-2"><button class="text-sky-700" onclick='openClassForm(${JSON.stringify(r)})'>Edit</button></td></tr>`),
+  const d=CACHE.classes, h=[`<table><thead><tr>
+    <th>ID</th><th>Nama</th><th>Guru</th><th>SPP</th><th>Jadwal</th><th>Status</th><th></th></tr></thead><tbody>`,
+    ...d.map(r=>`<tr><td>${r.id}</td><td>${r.class_name}</td>
+      <td>${nameOfTeacher(r.teacher_id)}</td><td>¥${r.monthly_fee_jpy}</td>
+      <td>${r.day_of_week} ${r.time||''}</td><td>${r.status||''}</td>
+      <td><button class="btn" onclick='openClassForm(${JSON.stringify(r)})'>Edit</button></td></tr>`),
     `</tbody></table>`];
   qs('classes-table').innerHTML=h.join('');
 }
@@ -115,9 +115,9 @@ function openEnrollForm(row={}){ const sid=prompt('ID Siswa',row.student_id||'')
     .then(refreshCache).then(loadEnrollments).catch(e=>alert(e.message));
 }
 function loadEnrollments(){
-  const d=CACHE.enrollments, h=[`<table class="min-w-full text-sm"><thead><tr class="text-left">
-    <th class="p-2">ID</th><th class="p-2">Siswa</th><th class="p-2">Kelas</th><th class="p-2">Start</th><th class="p-2">End</th><th class="p-2"></th></tr></thead><tbody>`,
-    ...d.map(r=>`<tr class="border-t"><td class="p-2">${r.id}</td><td class="p-2">${nameOfStudent(r.student_id)}</td><td class="p-2">${nameOfClass(r.class_id)}</td><td class="p-2">${r.start_month||''}</td><td class="p-2">${r.end_month||''}</td><td class="p-2"><button class="text-sky-700" onclick='openEnrollForm(${JSON.stringify(r)})'>Edit</button></td></tr>`),
+  const d=CACHE.enrollments, h=[`<table><thead><tr>
+    <th>ID</th><th>Siswa</th><th>Kelas</th><th>Start</th><th>End</th><th></th></tr></thead><tbody>`,
+    ...d.map(r=>`<tr><td>${r.id}</td><td>${nameOfStudent(r.student_id)}</td><td>${nameOfClass(r.class_id)}</td><td>${r.start_month||''}</td><td>${r.end_month||''}</td><td><button class="btn" onclick='openEnrollForm(${JSON.stringify(r)})'>Edit</button></td></tr>`),
     `</tbody></table>`];
   qs('enrollments-table').innerHTML=h.join('');
 }
@@ -128,30 +128,30 @@ function openAttendanceForm(){ const cid=prompt('ID Kelas',''); if(cid===null) r
   api('attendance.add',{row:{class_id:cid, student_id:sid, date, status:st, note:''}}).then(loadAttendance).catch(e=>alert(e.message));
 }
 async function loadAttendance(){
-  const d=await api('attendance.list'), h=[`<table class="min-w-full text-sm"><thead><tr class="text-left">
-    <th class="p-2">Kelas</th><th class="p-2">Siswa</th><th class="p-2">Tanggal</th><th class="p-2">Status</th></tr></thead><tbody>`,
-    ...d.map(r=>`<tr class="border-t"><td class="p-2">${nameOfClass(r.class_id)}</td><td class="p-2">${nameOfStudent(r.student_id)}</td><td class="p-2">${r.date}</td><td class="p-2">${r.status}</td></tr>`),
+  const d=await api('attendance.list'), h=[`<table><thead><tr>
+    <th>Kelas</th><th>Siswa</th><th>Tanggal</th><th>Status</th></tr></thead><tbody>`,
+    ...d.map(r=>`<tr><td>${nameOfClass(r.class_id)}</td><td>${nameOfStudent(r.student_id)}</td><td>${r.date}</td><td>${r.status}</td></tr>`),
     `</tbody></table>`];
   qs('attendance-table').innerHTML=h.join('');
 }
 
-// ===== Pembayaran =====
+// ===== payments =====
 function openPaymentModal(){
   qs('pay-student').innerHTML = CACHE.students.map(s=>`<option value="${s.id}">${s.full_name} — (${s.id})</option>`).join('');
   const m=(qs('pay-month')?.value)||new Date().toISOString().slice(0,7); qs('pay-month-modal').value=m;
 
   const box = CACHE.classes.map(c=>{
     const label = `${c.class_name} — ${nameOfTeacher(c.teacher_id)} — ¥${c.monthly_fee_jpy}`;
-    return `<label class="flex items-center gap-2"><input type="checkbox" class="pay-class" value="${c.id}"><span>${label}</span></label>`;
+    return `<label style="display:flex;gap:8px;align-items:center;margin:4px 0"><input type="checkbox" class="pay-class" value="${c.id}"><span>${label}</span></label>`;
   }).join('');
-  qs('pay-classes-box').innerHTML = `<div class="grid md:grid-cols-2 gap-2 max-h-[220px] overflow-auto">${box}</div>`;
+  qs('pay-classes-box').innerHTML = box;
   qs('pay-summary').innerHTML = ''; qs('pay-amount').value = ''; qs('pay-method').value = 'Cash';
-  qs('pay-modal').classList.remove('hidden'); qs('pay-modal').classList.add('flex');
+  qs('pay-modal').style.display='flex';
 
   Array.from(document.querySelectorAll('.pay-class')).forEach(ch=> ch.addEventListener('change', previewFees));
   qs('pay-student').addEventListener('change', previewFees);
 }
-function closePayModal(){ qs('pay-modal').classList.add('hidden'); qs('pay-modal').classList.remove('flex'); }
+function closePayModal(){ qs('pay-modal').style.display='none'; }
 
 async function previewFees(){
   const sid=qs('pay-student').value;
@@ -160,10 +160,9 @@ async function previewFees(){
   const r=await api('fees.preview',{student_id:sid, class_ids});
   const fmt=n=>new Intl.NumberFormat('ja-JP',{style:'currency',currency:'JPY'}).format(n);
   qs('pay-summary').innerHTML = `
-    <div class="mt-2 border rounded-lg p-2 bg-slate-50">
-      ${r.items.map(it=>`<div class="flex justify-between"><span>${it.class_name}</span><span>${fmt(it.fee)}</span></div>`).join('')}
-      <div class="border-t mt-1 pt-1 flex justify-between font-medium"><span>Total</span><span>${fmt(r.total)}</span></div>
-    </div>`;
+    ${r.items.map(it=>`<div style="display:flex;justify-content:space-between"><span>${it.class_name}</span><span>${fmt(it.fee)}</span></div>`).join('')}
+    <div style="border-top:1px solid #e2e8f0;margin-top:6px;padding-top:6px;display:flex;justify-content:space-between;font-weight:600">
+      <span>Total</span><span>${fmt(r.total)}</span></div>`;
   qs('pay-amount').value = r.total;
   qs('pay-summary').dataset.preview = JSON.stringify(r.items);
 }
@@ -194,7 +193,7 @@ async function submitPayment(){
     if(receiptLinks.length){
       const html=receiptLinks.map((u,i)=>`<li><a target="_blank" href="${u}">Kwitansi ${i+1}</a></li>`).join('');
       const w=window.open('', '_blank', 'width=480,height=320');
-      w.document.write(`<h3>Kwitansi</h3><ul>${html}</ul><button onclick="(${function(links){links.forEach(u=>window.open(u,'_blank'));}})(${JSON.stringify(receiptLinks)})">Buka semua PDF</button>`);
+      w.document.write(`<h3>Kwitansi</h3><ul>${html}</ul>`);
     }else{
       alert('Pembayaran tersimpan.');
     }
@@ -205,9 +204,9 @@ async function loadPayments(){
   const m=(qs('pay-month')?.value||'').slice(0,7);
   const d=await api('payments.list',{month:m});
   const fmt=n=>new Intl.NumberFormat('ja-JP',{style:'currency',currency:'JPY'}).format(n);
-  const h=[`<table class="min-w-full text-sm"><thead><tr class="text-left">
-    <th class="p-2">ID</th><th class="p-2">Siswa</th><th class="p-2">Kelas</th><th class="p-2">Bulan</th><th class="p-2">Nominal</th><th class="p-2">Metode</th><th class="p-2">Kwitansi</th></tr></thead><tbody>`,
-    ...d.map(r=>`<tr class="border-t"><td class="p-2">${r.id}</td><td class="p-2">${nameOfStudent(r.student_id)}</td><td class="p-2">${r.class_id?nameOfClass(r.class_id):'—'}</td><td class="p-2">${r.month}</td><td class="p-2">${fmt(Number(r.amount_jpy||0))}</td><td class="p-2">${r.method||''}</td><td class="p-2">${r.pdf_file_id?`<a class="text-sky-700" target="_blank" href="https://drive.google.com/uc?id=${r.pdf_file_id}">PDF</a>`:''}</td></tr>`),
+  const h=[`<table><thead><tr>
+    <th>ID</th><th>Siswa</th><th>Kelas</th><th>Bulan</th><th>Nominal</th><th>Metode</th><th>Kwitansi</th></tr></thead><tbody>`,
+    ...d.map(r=>`<tr><td>${r.id}</td><td>${nameOfStudent(r.student_id)}</td><td>${r.class_id?nameOfClass(r.class_id):'—'}</td><td>${r.month}</td><td>${fmt(Number(r.amount_jpy||0))}</td><td>${r.method||''}</td><td>${r.pdf_file_id?`<a target="_blank" href="https://drive.google.com/uc?id=${r.pdf_file_id}">PDF</a>`:''}</td></tr>`),
     `</tbody></table>`];
   qs('payments-table').innerHTML=h.join('');
 }
@@ -217,8 +216,8 @@ async function generateInvoices(){ const m=(qs('inv-month')?.value||'').slice(0,
 async function loadInvoices(){
   const m=(qs('inv-month')?.value||'').slice(0,7), d=await api('invoices.list',{month:m});
   const fmt=n=>new Intl.NumberFormat('ja-JP',{style:'currency',currency:'JPY'}).format(n);
-  const h=[`<table class="min-w-full text-sm"><thead><tr class="text-left"><th class="p-2">ID</th><th class="p-2">Siswa</th><th class="p-2">Bulan</th><th class="p-2">Tagihan</th><th class="p-2">Terbayar</th><th class="p-2">Status</th><th class="p-2">PDF</th></tr></thead><tbody>`,
-    ...d.map(r=>`<tr class="border-t"><td class="p-2">${r.id}</td><td class="p-2">${nameOfStudent(r.student_id)}</td><td class="p-2">${r.month}</td><td class="p-2">${fmt(Number(r.total_due_jpy||0))}</td><td class="p-2">${fmt(Number(r.total_paid_jpy||0))}</td><td class="p-2">${r.status||''}</td><td class="p-2">${r.pdf_file_id?`<a class="text-sky-700" target="_blank" href="https://drive.google.com/uc?id=${r.pdf_file_id}">PDF</a>`:''}</td></tr>`),
+  const h=[`<table><thead><tr><th>ID</th><th>Siswa</th><th>Bulan</th><th>Tagihan</th><th>Terbayar</th><th>Status</th><th>PDF</th></tr></thead><tbody>`,
+    ...d.map(r=>`<tr><td>${r.id}</td><td>${nameOfStudent(r.student_id)}</td><td>${r.month}</td><td>${fmt(Number(r.total_due_jpy||0))}</td><td>${fmt(Number(r.total_paid_jpy||0))}</td><td>${r.status||''}</td><td>${r.pdf_file_id?`<a target="_blank" href="https://drive.google.com/uc?id=${r.pdf_file_id}">PDF</a>`:''}</td></tr>`),
     `</tbody></table>`];
   qs('invoices-table').innerHTML=h.join('');
 }
@@ -227,8 +226,8 @@ async function loadInvoices(){
 async function loadMukafaah(){
   const m=(qs('muka-month')?.value||'').slice(0,7), d=await api('mukafaah.byTeacher',{month:m});
   const fmt=n=>new Intl.NumberFormat('ja-JP',{style:'currency',currency:'JPY'}).format(n);
-  const h=[`<table class="min-w-full text-sm"><thead><tr class="text-left"><th class="p-2">Guru</th><th class="p-2">Total SPP</th><th class="p-2">Mukafaah (70%)</th></tr></thead><tbody>`,
-    ...d.map(r=>`<tr class="border-t"><td class="p-2">${nameOfTeacher(r.teacher_id)}</td><td class="p-2">${fmt(Number(r.total_fee||0))}</td><td class="p-2 font-medium">${fmt(Number(r.mukafaah||0))}</td></tr>`),
+  const h=[`<table><thead><tr><th>Guru</th><th>Total SPP</th><th>Mukafaah (70%)</th></tr></thead><tbody>`,
+    ...d.map(r=>`<tr><td>${nameOfTeacher(r.teacher_id)}</td><td>${fmt(Number(r.total_fee||0))}</td><td style="font-weight:600">${fmt(Number(r.mukafaah||0))}</td></tr>`),
     `</tbody></table>`];
   qs('mukafaah-table').innerHTML=h.join('');
 }
@@ -240,17 +239,17 @@ function openExpenseForm(){ const date=prompt('Tanggal (YYYY-MM-DD)',''); if(dat
 }
 async function loadExpenses(){
   const d=await api('expenses.list'), fmt=n=>new Intl.NumberFormat('ja-JP',{style:'currency',currency:'JPY'}).format(n);
-  const h=[`<table class="min-w-full text-sm"><thead><tr class="text-left"><th class="p-2">Tanggal</th><th class="p-2">Kategori</th><th class="p-2">Nominal</th><th class="p-2">Keterangan</th><th class="p-2">Bukti</th></tr></thead><tbody>`,
-    ...d.map(r=>`<tr class="border-t"><td class="p-2">${r.date||''}</td><td class="p-2">${r.category||''}</td><td class="p-2">${fmt(Number(r.amount_jpy||0))}</td><td class="p-2">${r.description||''}</td><td class="p-2">${r.pdf_file_id?`<a target="_blank" class="text-sky-700" href="https://drive.google.com/uc?id=${r.pdf_file_id}">PDF</a>`:''}</td></tr>`),
+  const h=[`<table><thead><tr><th>Tanggal</th><th>Kategori</th><th>Nominal</th><th>Keterangan</th><th>Bukti</th></tr></thead><tbody>`,
+    ...d.map(r=>`<tr><td>${r.date||''}</td><td>${r.category||''}</td><td>${fmt(Number(r.amount_jpy||0))}</td><td>${r.description||''}</td><td>${r.pdf_file_id?`<a target="_blank" href="https://drive.google.com/uc?id=${r.pdf_file_id}">PDF</a>`:''}</td></tr>`),
     `</tbody></table>`];
   qs('expenses-table').innerHTML=h.join('');
 }
 async function loadCashbook(){
   const m=(qs('cash-month')?.value||'').slice(0,7), r=await api('cashbook',{month:m});
   const fmt=n=>new Intl.NumberFormat('ja-JP',{style:'currency',currency:'JPY'}).format(n);
-  qs('cashbook-table').innerHTML=`<div class="grid md:grid-cols-3 gap-3 mb-3">
-    <div class="card"><div class="text-sm text-slate-500">Pemasukan</div><div class="text-2xl font-bold">${fmt(r.income||0)}</div></div>
-    <div class="card"><div class="text-sm text-slate-500">Pengeluaran</div><div class="text-2xl font-bold">${fmt(r.expense||0)}</div></div>
-    <div class="card"><div class="text-sm text-slate-500">Saldo</div><div class="text-2xl font-bold">${fmt((r.income||0)-(r.expense||0))}</div></div>
+  qs('cashbook-table').innerHTML=`<div class="cards">
+    <div class="card"><h4>Pemasukan</h4><div class="num">${fmt(r.income||0)}</div></div>
+    <div class="card"><h4>Pengeluaran</h4><div class="num">${fmt(r.expense||0)}</div></div>
+    <div class="card"><h4>Saldo</h4><div class="num">${fmt((r.income||0)-(r.expense||0))}</div></div>
   </div>`;
 }
