@@ -178,26 +178,57 @@ async function previewFees(){
 }
 
 // modePrint = true → setelah simpan, auto-buka PDF kwitansi
+// modePrint = true → setelah simpan, auto-buka PDF kwitansi
 async function submitPayment(modePrint){
   try{
-    const student_id=qs('pay-student').value;
-    const month=qs('pay-month-modal').value;
-    const method=qs('pay-method').value;
-    const selected=Array.from(document.querySelectorAll('.pay-class:checked')).map(x=>x.value);
+    const student_id = qs('pay-student').value;
+    const month      = qs('pay-month-modal').value;
+    const method     = qs('pay-method').value;
+    const selected   = Array.from(document.querySelectorAll('.pay-class:checked')).map(x=>x.value);
 
-    if(!student_id||!month) return alert('Pilih siswa dan bulan.');
+    if(!student_id || !month) return alert('Pilih siswa dan bulan.');
 
-    let receiptLinks=[];
-    if(selected.length>0){
-      let items=[]; try{ items=JSON.parse(qs('pay-summary').dataset.preview||'[]'); }catch(_){}
-      if(items.length===0){ const r=await api('fees.preview',{student_id, class_ids:selected}); items=r.items; }
-      const res=await api('payments.addBatch',{student_id, month, method, items: items.map(it=>({class_id:it.class_id, amount_jpy:it.fee}))});
-      receiptLinks=(res.files||[]).map(id=>`https://drive.google.com/uc?id=${id}`);
-    }else{
-      const amount=Number(qs('pay-amount').value||0); if(!amount) return alert('Masukkan nominal.');
-      const r=await api('payments.add',{row:{student_id, class_id:'', month, amount_jpy:amount, method}});
-      if(r.pdf_file_id) receiptLinks=[`https://drive.google.com/uc?id=${r.pdf_file_id}`];
+    let receiptLinks = [];
+
+    if (selected.length > 0) {
+      // >>> PERBAIKAN: kirim class_ids saja (server yang hitung nominal) <<<
+      const res = await api('payments.addBatch', {
+        student_id: student_id,
+        month     : month,
+        method    : method,
+        class_ids : selected
+      });
+      receiptLinks = (res.files || []).map(id => `https://drive.google.com/uc?id=${id}`);
+    } else {
+      // pembayaran umum (tanpa kelas)
+      const amount = Number(qs('pay-amount').value || 0);
+      if (!amount) return alert('Masukkan nominal.');
+      const r = await api('payments.add', {
+        row: { student_id, class_id:'', month, amount_jpy: amount, method }
+      });
+      if (r.pdf_file_id) receiptLinks = [`https://drive.google.com/uc?id=${r.pdf_file_id}`];
     }
+
+    closePayModal();
+    await loadPayments();
+    await loadInvoices();
+
+    if (modePrint && receiptLinks.length){
+      receiptLinks.forEach(u => window.open(u, '_blank'));
+    } else {
+      if (receiptLinks.length){
+        const html = receiptLinks.map((u,i)=>`<li><a target="_blank" href="${u}">Kwitansi ${i+1}</a></li>`).join('');
+        const w = window.open('', '_blank', 'width=480,height=320');
+        w.document.write(`<h3>Kwitansi</h3><ul>${html}</ul>`);
+      } else {
+        alert('Pembayaran tersimpan.');
+      }
+    }
+  } catch(err){
+    alert(err.message);
+  }
+}
+
 
     closePayModal(); await loadPayments(); await loadInvoices();
 
