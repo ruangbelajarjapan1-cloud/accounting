@@ -1,7 +1,9 @@
-// ===== URL Apps Script (WAJIB: /exec) =====
+'use strict';
+
+/* ====== KONFIG: URL Apps Script (/exec) ====== */
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxvyEzH2EXVr4tQ2rcrN5qxo9KkMS9Nqz0UPkokatszxbeCZqrU18K5xhVf6ERXzmT7RA/exec';
 
-// ===== JSONP helper (dengan timeout & debug) =====
+/* ====== JSONP helper (tanpa CORS, ada timeout & debug) ====== */
 function jsonp(action, payload = {}, timeoutMs = 12000) {
   return new Promise((resolve, reject) => {
     const cb = 'rbmj_cb_' + Math.random().toString(36).slice(2);
@@ -15,44 +17,55 @@ function jsonp(action, payload = {}, timeoutMs = 12000) {
     const s = document.createElement('script');
     let timed = false;
 
-    window[cb] = (data) => { if(!timed){ resolve(data); } cleanup(); };
-    s.onerror = () => { if(!timed){ reject(new Error('JSONP failed: ' + src)); } cleanup(); };
+    window[cb] = (data) => { if (!timed) resolve(data); cleanup(); };
+    s.onerror   = () => { if (!timed) reject(new Error('JSONP failed: ' + src)); cleanup(); };
     s.src = src;
     document.body.appendChild(s);
 
     const t = setTimeout(() => { timed = true; reject(new Error('JSONP timeout: ' + src)); cleanup(); }, timeoutMs);
 
-    function cleanup(){
-      try{ delete window[cb]; }catch(_){ window[cb]=undefined; }
-      clearTimeout(t); s.remove();
+    function cleanup() {
+      try { delete window[cb]; } catch (_) { window[cb] = undefined; }
+      clearTimeout(t);
+      s.remove();
     }
   });
 }
-const api = (a,p)=>jsonp(a,p);
+const api = (a, p) => jsonp(a, p);
 
-// ===== util UI =====
+/* ====== util UI ====== */
 function qs(id){return document.getElementById(id);}
-function show(page){document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden')); qs('page-'+page).classList.remove('hidden');}
-document.querySelectorAll('.nav').forEach(b=> b.onclick = ()=> show(b.dataset.page));
+function show(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));
+  qs('page-'+page).classList.remove('hidden');
+}
+document.querySelectorAll('.nav').forEach(b => b.onclick = ()=> show(b.dataset.page));
 
-function loadLogo(){ const u=localStorage.getItem('rbmj_logo'); const img=document.getElementById('ui-logo'); if(img) img.src=u||'https://via.placeholder.com/80x80.png?text=RBMJ'; }
-loadLogo();
+function loadLogo(){
+  const u = localStorage.getItem('rbmj_logo');
+  const img = document.getElementById('ui-logo');
+  if (img) img.src = u || 'https://via.placeholder.com/80x80.png?text=RBMJ';
+}
 
-// ===== cache =====
-let CACHE={students:[],teachers:[],classes:[],enrollments:[]};
-const mapById=a=>{const m={}; a.forEach(x=>m[String(x.id)]=x); return m;};
+/* ====== cache ====== */
+let CACHE={students:[],teachers:[],classes:[],enrollments:[], _s:{},_t:{},_c:{}};
+const mapById=a=>{const m={}; (a||[]).forEach(x=>m[String(x.id)]=x); return m;};
 const nameOfStudent=id => (CACHE._s||{})[String(id)]?.full_name || id || '—';
 const nameOfClass  =id => (CACHE._c||{})[String(id)]?.class_name || id || '—';
 const nameOfTeacher=id => (CACHE._t||{})[String(id)]?.full_name || id || '—';
 
 async function refreshCache(){
-  const [s,t,c,e]=await Promise.all([api('students.list'),api('teachers.list'),api('classes.list'),api('enrollments.list')]);
+  const [s,t,c,e] = await Promise.all([
+    api('students.list'),
+    api('teachers.list'),
+    api('classes.list'),
+    api('enrollments.list')
+  ]);
   CACHE.students=s; CACHE.teachers=t; CACHE.classes=c; CACHE.enrollments=e;
   CACHE._s=mapById(s); CACHE._t=mapById(t); CACHE._c=mapById(c);
 }
-refreshCache().then(()=>{ loadDashboard(); loadStudents(); loadTeachers(); loadClasses(); loadEnrollments(); loadAttendance(); loadPayments(); loadInvoices(); loadMukafaah(); loadExpenses(); loadCashbook(); });
 
-// ===== dashboard =====
+/* ====== dashboard ====== */
 async function loadDashboard(){
   try{
     const s=await api('stats');
@@ -62,7 +75,7 @@ async function loadDashboard(){
   }catch(e){console.warn(e);}
 }
 
-// ===== students =====
+/* ====== students ====== */
 function openStudentForm(row={}){
   const full = prompt('Nama lengkap', row.full_name||''); if(full===null) return;
   const family=prompt('Family key', row.family_key||'');
@@ -84,7 +97,7 @@ function loadStudents(){
   qs('students-table').innerHTML=h.join('');
 }
 
-// ===== teachers =====
+/* ====== teachers ====== */
 function openTeacherForm(row={}){ const full=prompt('Nama lengkap',row.full_name||''); if(full===null) return;
   const phone=prompt('Telp',row.phone||''); const email=prompt('Email',row.email||''); const status=prompt('Status',row.status||'Active');
   api('teachers.upsert',{row:{id:row.id||'', full_name:full, phone, email, note:'', status}})
@@ -100,7 +113,7 @@ function loadTeachers(){
   qs('teachers-table').innerHTML=h.join('');
 }
 
-// ===== classes =====
+/* ====== classes ====== */
 function openClassForm(row={}){ const name=prompt('Nama kelas',row.class_name||''); if(name===null) return;
   const teacher_id=prompt('ID Guru',row.teacher_id||''); const fee=prompt('SPP/bulan (JPY)',row.monthly_fee_jpy||'');
   const dow=prompt('Hari (Mon..Sun)',row.day_of_week||''); const time=prompt('Jam (HH:MM)',row.time||''); const status=prompt('Status',row.status||'Active');
@@ -118,7 +131,7 @@ function loadClasses(){
   qs('classes-table').innerHTML=h.join('');
 }
 
-// ===== enrollments =====
+/* ====== enrollments ====== */
 function openEnrollForm(row={}){ const sid=prompt('ID Siswa',row.student_id||''); if(sid===null) return;
   const cid=prompt('ID Kelas',row.class_id||''); const st=prompt('Mulai (YYYY-MM)',row.start_month||''); const en=prompt('Akhir (YYYY-MM atau kosong)',row.end_month||'');
   api('enrollments.upsert',{row:{id:row.id||'', student_id:sid, class_id:cid, start_month:st, end_month:en}})
@@ -132,7 +145,7 @@ function loadEnrollments(){
   qs('enrollments-table').innerHTML=h.join('');
 }
 
-// ===== attendance =====
+/* ====== attendance ====== */
 function openAttendanceForm(){ const cid=prompt('ID Kelas',''); if(cid===null) return;
   const sid=prompt('ID Siswa',''); const date=prompt('Tanggal (YYYY-MM-DD)',''); const st=prompt('Status (Present/Absent/Late/Excused)','Present');
   api('attendance.add',{row:{class_id:cid, student_id:sid, date, status:st, note:''}}).then(loadAttendance).catch(e=>alert(e.message));
@@ -145,7 +158,7 @@ async function loadAttendance(){
   qs('attendance-table').innerHTML=h.join('');
 }
 
-// ===== payments =====
+/* ====== payments ====== */
 function openPaymentModal(){
   qs('pay-student').innerHTML = CACHE.students.map(s=>`<option value="${s.id}">${s.full_name} — (${s.id})</option>`).join('');
   const m=(qs('pay-month')?.value)||new Date().toISOString().slice(0,7); qs('pay-month-modal').value=m;
@@ -178,72 +191,33 @@ async function previewFees(){
 }
 
 // modePrint = true → setelah simpan, auto-buka PDF kwitansi
-// modePrint = true → setelah simpan, auto-buka PDF kwitansi
 async function submitPayment(modePrint){
   try{
-    const student_id = qs('pay-student').value;
-    const month      = qs('pay-month-modal').value;
-    const method     = qs('pay-method').value;
-    const selected   = Array.from(document.querySelectorAll('.pay-class:checked')).map(x=>x.value);
+    const student_id=qs('pay-student').value;
+    const month=qs('pay-month-modal').value;
+    const method=qs('pay-method').value;
+    const selected=Array.from(document.querySelectorAll('.pay-class:checked')).map(x=>x.value);
 
-    if(!student_id || !month) return alert('Pilih siswa dan bulan.');
+    if(!student_id||!month) return alert('Pilih siswa dan bulan.');
 
-    let receiptLinks = [];
-
-    if (selected.length > 0) {
-      // >>> PERBAIKAN: kirim class_ids saja (server yang hitung nominal) <<<
-      const res = await api('payments.addBatch', {
-        student_id: student_id,
-        month     : month,
-        method    : method,
-        class_ids : selected
-      });
-      receiptLinks = (res.files || []).map(id => `https://drive.google.com/uc?id=${id}`);
-    } else {
-      // pembayaran umum (tanpa kelas)
-      const amount = Number(qs('pay-amount').value || 0);
-      if (!amount) return alert('Masukkan nominal.');
-      const r = await api('payments.add', {
-        row: { student_id, class_id:'', month, amount_jpy: amount, method }
-      });
-      if (r.pdf_file_id) receiptLinks = [`https://drive.google.com/uc?id=${r.pdf_file_id}`];
+    let receiptLinks=[];
+    if (selected.length>0){
+      // kirim class_ids S A J A (server yang hitung nominal)
+      const res=await api('payments.addBatch', { student_id, month, method, class_ids: selected });
+      receiptLinks=(res.files||[]).map(id=>`https://drive.google.com/uc?id=${id}`);
+    }else{
+      const amount=Number(qs('pay-amount').value||0); if(!amount) return alert('Masukkan nominal.');
+      const r=await api('payments.add',{row:{student_id, class_id:'', month, amount_jpy:amount, method}});
+      if(r.pdf_file_id) receiptLinks=[`https://drive.google.com/uc?id=${r.pdf_file_id}`];
     }
-
-    closePayModal();
-    await loadPayments();
-    await loadInvoices();
-
-    if (modePrint && receiptLinks.length){
-      receiptLinks.forEach(u => window.open(u, '_blank'));
-    } else {
-      if (receiptLinks.length){
-        const html = receiptLinks.map((u,i)=>`<li><a target="_blank" href="${u}">Kwitansi ${i+1}</a></li>`).join('');
-        const w = window.open('', '_blank', 'width=480,height=320');
-        w.document.write(`<h3>Kwitansi</h3><ul>${html}</ul>`);
-      } else {
-        alert('Pembayaran tersimpan.');
-      }
-    }
-  } catch(err){
-    alert(err.message);
-  }
-}
-
 
     closePayModal(); await loadPayments(); await loadInvoices();
 
-    if(modePrint && receiptLinks.length){
-      receiptLinks.forEach(u=>window.open(u,'_blank'));
-    }else{
-      // tampilkan dialog kecil daftar link
-      if(receiptLinks.length){
-        const html=receiptLinks.map((u,i)=>`<li><a target="_blank" href="${u}">Kwitansi ${i+1}</a></li>`).join('');
-        const w=window.open('', '_blank', 'width=480,height=320');
-        w.document.write(`<h3>Kwitansi</h3><ul>${html}</ul>`);
-      }else{
-        alert('Pembayaran tersimpan.');
-      }
-    }
+    if(modePrint && receiptLinks.length){ receiptLinks.forEach(u=>window.open(u,'_blank')); }
+    else if (receiptLinks.length){
+      const html=receiptLinks.map((u,i)=>`<li><a target="_blank" href="${u}">Kwitansi ${i+1}</a></li>`).join('');
+      const w=window.open('', '_blank', 'width=480,height=320'); w.document.write(`<h3>Kwitansi</h3><ul>${html}</ul>`);
+    }else{ alert('Pembayaran tersimpan.'); }
   }catch(err){ alert(err.message); }
 }
 
@@ -258,7 +232,7 @@ async function loadPayments(){
   qs('payments-table').innerHTML=h.join('');
 }
 
-// ===== invoices =====
+/* ====== invoices ====== */
 async function generateInvoices(){ const m=(qs('inv-month')?.value||'').slice(0,7); if(!m) return alert('Pilih bulan.'); const r=await api('invoices.generate',{month:m}); alert('Invoice dibuat: '+r.count); loadInvoices(); }
 async function loadInvoices(){
   const m=(qs('inv-month')?.value||'').slice(0,7), d=await api('invoices.list',{month:m});
@@ -269,7 +243,7 @@ async function loadInvoices(){
   qs('invoices-table').innerHTML=h.join('');
 }
 
-// ===== mukafaah =====
+/* ====== mukafaah ====== */
 async function loadMukafaah(){
   const m=(qs('muka-month')?.value||'').slice(0,7), d=await api('mukafaah.byTeacher',{month:m});
   const fmt=n=>new Intl.NumberFormat('ja-JP',{style:'currency',currency:'JPY'}).format(n);
@@ -279,7 +253,7 @@ async function loadMukafaah(){
   qs('mukafaah-table').innerHTML=h.join('');
 }
 
-// ===== expenses & cashbook =====
+/* ====== expenses & cashbook ====== */
 function openExpenseForm(){ const date=prompt('Tanggal (YYYY-MM-DD)',''); if(date===null) return;
   const cat=prompt('Kategori',''); const amt=prompt('Nominal JPY',''); const desc=prompt('Deskripsi','');
   api('expenses.add',{row:{date, category:cat, amount_jpy:Number(amt), description:desc, note:''}}).then(loadExpenses).catch(e=>alert(e.message));
@@ -300,3 +274,16 @@ async function loadCashbook(){
     <div class="card"><h4>Saldo</h4><div class="num">${fmt((r.income||0)-(r.expense||0))}</div></div>
   </div>`;
 }
+
+/* ====== BOOT ====== */
+(async function init(){
+  loadLogo();
+  try{
+    await refreshCache();
+    await loadDashboard();
+    loadStudents(); loadTeachers(); loadClasses(); loadEnrollments();
+    await loadAttendance();
+    await loadPayments(); await loadInvoices(); await loadMukafaah();
+    await loadExpenses(); await loadCashbook();
+  }catch(e){ console.error(e); alert(e.message); }
+})();
