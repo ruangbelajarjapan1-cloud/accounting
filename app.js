@@ -1,22 +1,31 @@
 // ===== URL Apps Script (WAJIB: /exec) =====
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxvyEzH2EXVr4tQ2rcrN5qxo9KkMS9Nqz0UPkokatszxbeCZqrU18K5xhVf6ERXzmT7RA/exec';
 
-// ===== JSONP helper (tanpa CORS) =====
-function jsonp(action, payload = {}) {
+// ===== JSONP helper (dengan timeout & debug) =====
+function jsonp(action, payload = {}, timeoutMs = 12000) {
   return new Promise((resolve, reject) => {
     const cb = 'rbmj_cb_' + Math.random().toString(36).slice(2);
-    window[cb] = (data) => { resolve(data); cleanup(); };
-    const q = new URLSearchParams({
+    const params = new URLSearchParams({
       action: action || '',
       payload: JSON.stringify(payload || {}),
       callback: cb,
       _: Date.now().toString()
     });
+    const src = GAS_URL + '?' + params.toString();
     const s = document.createElement('script');
-    s.src = GAS_URL + '?' + q.toString();
-    s.onerror = () => { reject(new Error('JSONP failed')); cleanup(); };
+    let timed = false;
+
+    window[cb] = (data) => { if(!timed){ resolve(data); } cleanup(); };
+    s.onerror = () => { if(!timed){ reject(new Error('JSONP failed: ' + src)); } cleanup(); };
+    s.src = src;
     document.body.appendChild(s);
-    function cleanup(){ try{ delete window[cb]; }catch(_){ window[cb]=undefined; } s.remove(); }
+
+    const t = setTimeout(() => { timed = true; reject(new Error('JSONP timeout: ' + src)); cleanup(); }, timeoutMs);
+
+    function cleanup(){
+      try{ delete window[cb]; }catch(_){ window[cb]=undefined; }
+      clearTimeout(t); s.remove();
+    }
   });
 }
 const api = (a,p)=>jsonp(a,p);
@@ -25,6 +34,7 @@ const api = (a,p)=>jsonp(a,p);
 function qs(id){return document.getElementById(id);}
 function show(page){document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden')); qs('page-'+page).classList.remove('hidden');}
 document.querySelectorAll('.nav').forEach(b=> b.onclick = ()=> show(b.dataset.page));
+
 function loadLogo(){ const u=localStorage.getItem('rbmj_logo'); const img=document.getElementById('ui-logo'); if(img) img.src=u||'https://via.placeholder.com/80x80.png?text=RBMJ'; }
 loadLogo();
 
@@ -167,7 +177,8 @@ async function previewFees(){
   qs('pay-summary').dataset.preview = JSON.stringify(r.items);
 }
 
-async function submitPayment(){
+// modePrint = true → setelah simpan, auto-buka PDF kwitansi
+async function submitPayment(modePrint){
   try{
     const student_id=qs('pay-student').value;
     const month=qs('pay-month-modal').value;
@@ -190,12 +201,17 @@ async function submitPayment(){
 
     closePayModal(); await loadPayments(); await loadInvoices();
 
-    if(receiptLinks.length){
-      const html=receiptLinks.map((u,i)=>`<li><a target="_blank" href="${u}">Kwitansi ${i+1}</a></li>`).join('');
-      const w=window.open('', '_blank', 'width=480,height=320');
-      w.document.write(`<h3>Kwitansi</h3><ul>${html}</ul>`);
+    if(modePrint && receiptLinks.length){
+      receiptLinks.forEach(u=>window.open(u,'_blank'));
     }else{
-      alert('Pembayaran tersimpan.');
+      // tampilkan dialog kecil daftar link
+      if(receiptLinks.length){
+        const html=receiptLinks.map((u,i)=>`<li><a target="_blank" href="${u}">Kwitansi ${i+1}</a></li>`).join('');
+        const w=window.open('', '_blank', 'width=480,height=320');
+        w.document.write(`<h3>Kwitansi</h3><ul>${html}</ul>`);
+      }else{
+        alert('Pembayaran tersimpan.');
+      }
     }
   }catch(err){ alert(err.message); }
 }
