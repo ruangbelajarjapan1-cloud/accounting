@@ -2,259 +2,173 @@
 <html lang="id">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>RBMJ — Admin</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://unpkg.com/lucide-static@0.321.0/font/lucide.css" rel="stylesheet">
-  <style>.card{border-radius:16px;background:#fff;box-shadow:0 6px 18px rgba(2,6,23,.08);padding:16px}</style>
   <style>
-  /* sembunyikan bar endpoint lama jika masih ada */
-  #endpointBar, .endpoint-bar { display:none !important; }
-</style>
-
+    :root{--bg:#f8fafc;--card:#fff;--muted:#64748b;--ink:#0f172a;--sky:#0369a1;}
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,Segoe UI,Roboto,Inter,Arial}
+    .app{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
+    aside{background:#fff;border-right:1px solid #e2e8f0;padding:14px}
+    .brand{display:flex;gap:10px;align-items:center;margin-bottom:8px}
+    .brand img{width:36px;height:36px;border-radius:10px;background:#e2e8f0;object-fit:cover}
+    .navs button{display:flex;gap:8px;align-items:center;width:100%;padding:8px 10px;border-radius:10px;border:0;background:transparent;cursor:pointer}
+    .navs button:hover{background:#f1f5f9}
+    main{padding:16px}
+    .cards{display:grid;grid-template-columns:repeat(3,minmax(220px,1fr));gap:12px}
+    .card{background:var(--card);border:1px solid #e2e8f0;border-radius:14px;padding:14px}
+    .card h4{margin:0;font-size:12px;color:var(--muted)}
+    .card .num{font-size:28px;font-weight:700;margin-top:6px}
+    .toolbar{display:flex;gap:8px;align-items:center;margin:10px 0}
+    .btn{padding:8px 12px;border-radius:10px;border:1px solid #cbd5e1;background:#fff;cursor:pointer}
+    .btn.sky{background:var(--sky);border-color:var(--sky);color:#fff}
+    table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #e2e8f0;border-radius:14px;overflow:hidden}
+    th,td{padding:10px;border-top:1px solid #e2e8f0;text-align:left}
+    thead th{background:#f8fafc;border-top:0;font-weight:600}
+    .hidden{display:none}
+    /* modal */
+    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.45);z-index:50}
+    .modal .panel{background:#fff;border-radius:16px;max-width:700px;width:92vw;padding:16px}
+    .grid{display:grid;gap:10px}
+    .g2{grid-template-columns:1fr 1fr}
+    .field{display:flex;flex-direction:column;gap:6px}
+    .field label{font-size:12px;color:var(--muted)}
+    .field input,.field select,.field textarea{padding:8px 10px;border:1px solid #cbd5e1;border-radius:10px}
+    .pay-classes{max-height:220px;overflow:auto;border:1px solid #e2e8f0;border-radius:10px;padding:8px}
+    .summary{border:1px dashed #cbd5e1;border-radius:10px;padding:8px;background:#f8fafc}
+  </style>
 </head>
-<body class="bg-slate-50 text-slate-900">
-<div class="min-h-screen grid grid-cols-1 md:grid-cols-[260px_1fr]">
-  <aside class="bg-white border-r hidden md:flex flex-col">
-    <div class="p-4 flex items-center gap-3 border-b">
-      <img id="ui-logo" class="w-10 h-10 rounded-xl object-cover" alt="Logo">
+<body>
+<div class="app">
+  <aside>
+    <div class="brand">
+      <img id="ui-logo" src="https://via.placeholder.com/80x80.png?text=RBMJ" alt="logo">
       <div>
-        <div class="font-bold">RBMJ Admin</div>
-        <div class="text-xs text-slate-500">Ruang Belajar Muslim Jepang</div>
+        <div style="font-weight:700">RBMJ Admin</div>
+        <div style="font-size:12px;color:#64748b">Ruang Belajar Muslim Jepang</div>
       </div>
     </div>
-    <!-- tombol kecil di pojok kanan untuk buka config -->
-<button class="fixed top-3 right-3 rounded-full w-9 h-9 bg-slate-800 text-white" title="Config" onclick="uiToggleCfg()">⚙️</button>
-
-<!-- bar config (disembunyikan default) -->
-<div id="cfg-bar" class="card mb-3 hidden">
-  <div class="flex flex-wrap items-center gap-2">
-    <input id="endpoint-input" class="border rounded-lg px-3 py-2 w-full md:w-[520px]" placeholder="Paste URL Web App (…/exec)">
-    <button class="px-3 py-2 rounded-lg bg-sky-600 text-white" onclick="uiSetEndpoint()">Set Endpoint</button>
-    <button class="px-3 py-2 rounded-lg bg-slate-700 text-white" onclick="ping()">Ping</button>
-    <span id="endpoint-show" class="text-xs text-slate-500"></span>
-  </div>
-</div>
-
-    <nav class="p-2 space-y-1 text-sm">
-      <button data-page="dashboard"  class="nav w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100">🏠 Dashboard</button>
-      <button data-page="students"   class="nav w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100">👨‍👩‍👧 Siswa</button>
-      <button data-page="teachers"   class="nav w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100">👩‍🏫 Guru</button>
-      <button data-page="classes"    class="nav w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100">🏷️ Kelas</button>
-      <button data-page="enrollments"class="nav w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100">🧩 Enrollments</button>
-      <button data-page="attendance" class="nav w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100">🗓️ Absensi</button>
-      <button data-page="payments"   class="nav w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100">💳 Pembayaran</button>
-      <button data-page="invoices"   class="nav w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100">🧾 Invoice & Kwitansi</button>
-      <button data-page="mukafaah"   class="nav w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100">🕌 Mukafaah Guru</button>
-      <button data-page="expenses"   class="nav w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100">🧾 Pengeluaran</button>
-      <button data-page="cashbook"   class="nav w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100">📕 Buku Kas</button>
-      <button data-page="reports"    class="nav w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100">📊 Rekapan</button>
-    </nav>
+    <div class="navs">
+      <button class="nav" data-page="dashboard">🏠 Dashboard</button>
+      <button class="nav" data-page="students">🧒 Siswa</button>
+      <button class="nav" data-page="teachers">👩‍🏫 Guru</button>
+      <button class="nav" data-page="classes">🏫 Kelas</button>
+      <button class="nav" data-page="enrollments">🧩 Enrollments</button>
+      <button class="nav" data-page="attendance">📝 Absensi</button>
+      <button class="nav" data-page="payments">💳 Pembayaran</button>
+      <button class="nav" data-page="invoices">🧾 Invoice & Kwitansi</button>
+      <button class="nav" data-page="mukafaah">💠 Mukafaah Guru</button>
+      <button class="nav" data-page="expenses">📦 Pengeluaran</button>
+      <button class="nav" data-page="cashbook">📊 Buku Kas</button>
+    </div>
   </aside>
 
- <main class="p-3 md:p-6">
-  <!-- Endpoint + Ping -->
-  <div class="card mb-3">
-    <div class="flex flex-wrap items-center gap-2">
-      <input id="endpoint-input" class="border rounded-lg px-3 py-2 w-full md:w-[520px]" placeholder="Paste URL Web App (…/exec)">
-      <button class="px-3 py-2 rounded-lg bg-sky-600 text-white" onclick="uiSetEndpoint()">Set Endpoint</button>
-      <button class="px-3 py-2 rounded-lg bg-slate-700 text-white" onclick="ping()">Ping</button>
-      <span id="endpoint-show" class="text-xs text-slate-500"></span>
-    </div>
-  </div>
-
-  <!-- Dashboard -->
-  <section id="page-dashboard" class="page">
-    <div class="grid md:grid-cols-3 gap-3">
-      <div class="card"><div class="text-sm text-slate-500">Total Siswa</div><div id="stat-students" class="text-3xl font-bold">–</div></div>
-      <div class="card"><div class="text-sm text-slate-500">Total Kelas</div><div id="stat-classes" class="text-3xl font-bold">–</div></div>
-      <div class="card"><div class="text-sm text-slate-500">Pembayaran bulan ini</div><div id="stat-payments" class="text-3xl font-bold">–</div></div>
-    </div>
-  </section>
-
-  <!-- Siswa -->
-  <section id="page-students" class="page hidden">
-    <div class="card">
-      <div class="flex items-center justify-between mb-2">
-        <h2 class="font-semibold">Siswa</h2>
-        <button class="px-3 py-1.5 rounded-lg bg-sky-600 text-white" onclick="openStudentForm()">Tambah</button>
+  <main>
+    <!-- DASHBOARD -->
+    <section id="page-dashboard" class="page">
+      <div class="cards">
+        <div class="card"><h4>Total Siswa</h4><div id="stat-students" class="num">—</div></div>
+        <div class="card"><h4>Total Kelas</h4><div id="stat-classes" class="num">—</div></div>
+        <div class="card"><h4>Pembayaran bulan ini</h4><div id="stat-payments" class="num">—</div></div>
       </div>
-      <input id="search-students" placeholder="Cari nama/orang tua..." class="w-full mb-2 border rounded-lg px-3 py-2">
-      <div id="students-table" class="overflow-auto"></div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Guru -->
-  <section id="page-teachers" class="page hidden">
-    <div class="card">
-      <div class="flex items-center justify-between mb-2">
-        <h2 class="font-semibold">Guru</h2>
-        <button class="px-3 py-1.5 rounded-lg bg-sky-600 text-white" onclick="openTeacherForm()">Tambah</button>
-      </div>
+    <!-- SISWA -->
+    <section id="page-students" class="page hidden">
+      <div class="toolbar"><button class="btn" onclick="openStudentForm()">Tambah Siswa</button></div>
+      <div id="students-table"></div>
+    </section>
+
+    <!-- GURU -->
+    <section id="page-teachers" class="page hidden">
+      <div class="toolbar"><button class="btn" onclick="openTeacherForm()">Tambah Guru</button></div>
       <div id="teachers-table"></div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Kelas -->
-  <section id="page-classes" class="page hidden">
-    <div class="card">
-      <div class="flex items-center justify-between mb-2">
-        <h2 class="font-semibold">Kelas</h2>
-        <button class="px-3 py-1.5 rounded-lg bg-sky-600 text-white" onclick="openClassForm()">Tambah</button>
-      </div>
+    <!-- KELAS -->
+    <section id="page-classes" class="page hidden">
+      <div class="toolbar"><button class="btn" onclick="openClassForm()">Tambah Kelas</button></div>
       <div id="classes-table"></div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Enrollments -->
-  <section id="page-enrollments" class="page hidden">
-    <div class="card">
-      <div class="flex items-center justify-between mb-2">
-        <h2 class="font-semibold">Enrollments</h2>
-        <button class="px-3 py-1.5 rounded-lg bg-sky-600 text-white" onclick="openEnrollForm()">Tambah</button>
-      </div>
+    <!-- ENROLLMENTS -->
+    <section id="page-enrollments" class="page hidden">
+      <div class="toolbar"><button class="btn" onclick="openEnrollForm()">Enroll</button></div>
       <div id="enrollments-table"></div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Absensi -->
-  <section id="page-attendance" class="page hidden">
-    <div class="card">
-      <div class="flex items-center justify-between mb-2">
-        <h2 class="font-semibold">Absensi</h2>
-        <button class="px-3 py-1.5 rounded-lg bg-sky-600 text-white" onclick="openAttendanceForm()">Input</button>
-      </div>
+    <!-- ABSENSI -->
+    <section id="page-attendance" class="page hidden">
+      <div class="toolbar"><button class="btn" onclick="openAttendanceForm()">Input Absensi</button></div>
       <div id="attendance-table"></div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Pembayaran -->
-  <section id="page-payments" class="page hidden">
-    <div class="card">
-      <div class="flex items-center justify-between mb-3">
-        <h2 class="font-semibold">Pembayaran SPP</h2>
-        <div class="flex gap-2">
-          <input id="pay-month" type="month" class="border rounded-lg px-3 py-2">
-          <button class="px-3 py-1.5 rounded-lg bg-sky-600 text-white" onclick="openPaymentModal()">Bayar</button>
-        </div>
+    <!-- PEMBAYARAN -->
+    <section id="page-payments" class="page hidden">
+      <div class="toolbar">
+        <input id="pay-month" type="month" class="btn" onchange="loadPayments()">
+        <button class="btn sky" onclick="openPaymentModal()">Bayar</button>
       </div>
       <div id="payments-table"></div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Invoice -->
-  <section id="page-invoices" class="page hidden">
-    <div class="card">
-      <div class="flex items-center justify-between mb-3">
-        <h2 class="font-semibold">Invoice & Kwitansi</h2>
-        <div class="flex gap-2">
-          <input id="inv-month" type="month" class="border rounded-lg px-3 py-2">
-          <button class="px-3 py-1.5 rounded-lg bg-sky-600 text-white" onclick="generateInvoices()">Generate Invoice Bulanan</button>
-        </div>
+    <!-- INVOICE -->
+    <section id="page-invoices" class="page hidden">
+      <div class="toolbar">
+        <input id="inv-month" type="month" class="btn" onchange="loadInvoices()">
+        <button class="btn sky" onclick="generateInvoices()">Generate Invoice Bulanan</button>
       </div>
       <div id="invoices-table"></div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Mukafaah -->
-  <section id="page-mukafaah" class="page hidden">
-    <div class="card">
-      <div class="flex items-center justify-between mb-3">
-        <h2 class="font-semibold">Mukafaah Guru (70%)</h2>
-        <div class="flex gap-2">
-          <input id="muka-month" type="month" class="border rounded-lg px-3 py-2">
-          <button class="px-3 py-1.5 rounded-lg bg-sky-600 text-white" onclick="loadMukafaah()">Hitung</button>
-        </div>
-      </div>
+    <!-- MUKAFAAH -->
+    <section id="page-mukafaah" class="page hidden">
+      <div class="toolbar"><input id="muka-month" type="month" class="btn" onchange="loadMukafaah()"></div>
       <div id="mukafaah-table"></div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Pengeluaran -->
-  <section id="page-expenses" class="page hidden">
-    <div class="card">
-      <div class="flex items-center justify-between mb-3">
-        <h2 class="font-semibold">Pengeluaran</h2>
-        <button class="px-3 py-1.5 rounded-lg bg-sky-600 text-white" onclick="openExpenseForm()">Tambah</button>
-      </div>
+    <!-- PENGELUARAN -->
+    <section id="page-expenses" class="page hidden">
+      <div class="toolbar"><button class="btn" onclick="openExpenseForm()">Tambah Pengeluaran</button></div>
       <div id="expenses-table"></div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Kas -->
-  <section id="page-cashbook" class="page hidden">
-    <div class="card">
-      <h2 class="font-semibold mb-2">Buku Kas Bulanan</h2>
-      <div class="flex gap-2 mb-2">
-        <input id="cash-month" type="month" class="border rounded-lg px-3 py-2">
-        <button class="px-3 py-1.5 rounded-lg bg-sky-600 text-white" onclick="loadCashbook()">Muat</button>
-      </div>
+    <!-- CASHBOOK -->
+    <section id="page-cashbook" class="page hidden">
+      <div class="toolbar"><input id="cash-month" type="month" class="btn" onchange="loadCashbook()"></div>
       <div id="cashbook-table"></div>
-    </div>
-  </section>
+    </section>
+  </main>
+</div>
 
-  <!-- MODAL PEMBAYARAN (di index.html) -->
-<div id="pay-modal" class="fixed inset-0 hidden items-center justify-center bg-black/40 z-50">
-  <div class="bg-white rounded-2xl w-[680px] max-w-[92vw] p-5">
-    <div class="flex items-center justify-between mb-3">
-      <h3 class="font-semibold">Input Pembayaran</h3>
-      <button class="text-slate-500" onclick="closePayModal()">✕</button>
+<!-- MODAL PEMBAYARAN -->
+<div id="pay-modal" class="modal">
+  <div class="panel">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div style="font-weight:600">Input Pembayaran</div>
+      <button class="btn" onclick="closePayModal()">✕</button>
     </div>
-    <div class="grid md:grid-cols-2 gap-3">
-      <div>
-        <label class="text-sm text-slate-600">Siswa</label>
-        <select id="pay-student" class="w-full border rounded-lg px-3 py-2"></select>
+
+    <div class="grid g2">
+      <div class="field"><label>Siswa</label><select id="pay-student"></select></div>
+      <div class="field"><label>Bulan</label><input id="pay-month-modal" type="month"></div>
+      <div class="field" style="grid-column:1/-1">
+        <label>Kelas (boleh pilih lebih dari satu)</label>
+        <div id="pay-classes-box" class="pay-classes"></div>
+        <div id="pay-summary" class="summary" style="margin-top:8px"></div>
       </div>
-      <div>
-        <label class="text-sm text-slate-600">Bulan</label>
-        <input id="pay-month-modal" type="month" class="w-full border rounded-lg px-3 py-2">
-      </div>
-      <div class="md:col-span-2">
-        <label class="text-sm text-slate-600">Kelas (boleh pilih lebih dari satu)</label>
-        <div id="pay-classes-box" class="mb-1"></div>
-        <div id="pay-summary"></div>
-      </div>
-      <div>
-        <label class="text-sm text-slate-600">Nominal (JPY)</label>
-        <input id="pay-amount" type="number" class="w-full border rounded-lg px-3 py-2" placeholder="contoh: 5000">
-      </div>
-      <div>
-        <label class="text-sm text-slate-600">Metode</label>
-        <select id="pay-method" class="w-full border rounded-lg px-3 py-2">
-          <option>Cash</option><option>Transfer</option><option>QR</option>
-        </select>
+      <div class="field"><label>Nominal (JPY)</label><input id="pay-amount" type="number" placeholder="contoh: 5000"></div>
+      <div class="field"><label>Metode</label>
+        <select id="pay-method"><option>Cash</option><option>Transfer</option><option>QR</option></select>
       </div>
     </div>
-    <div class="mt-4 flex justify-end gap-2">
-      <button class="px-3 py-2 rounded-lg bg-slate-200" onclick="closePayModal()">Batal</button>
-      <button class="px-3 py-2 rounded-lg bg-sky-600 text-white" onclick="submitPayment()">Simpan</button>
+
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px">
+      <button class="btn" onclick="closePayModal()">Batal</button>
+      <button class="btn sky" onclick="submitPayment()">Simpan</button>
     </div>
   </div>
 </div>
 
-
-        </div>
-        <div>
-          <label class="text-sm text-slate-600">Nominal (JPY)</label>
-          <input id="pay-amount" type="number" class="w-full border rounded-lg px-3 py-2" placeholder="contoh: 5000">
-        </div>
-        <div>
-          <label class="text-sm text-slate-600">Metode</label>
-          <select id="pay-method" class="w-full border rounded-lg px-3 py-2">
-            <option>Cash</option><option>Transfer</option><option>QR</option>
-          </select>
-        </div>
-      </div>
-      <div class="mt-4 flex justify-end gap-2">
-        <button class="px-3 py-2 rounded-lg bg-slate-200" onclick="closePayModal()">Batal</button>
-        <button class="px-3 py-2 rounded-lg bg-sky-600 text-white" onclick="submitPayment()">Simpan</button>
-      </div>
-    </div>
-  </div>
-</main>
-
-</div>
-
-<script src="./app.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
