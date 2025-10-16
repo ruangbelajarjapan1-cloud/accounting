@@ -193,10 +193,12 @@ async function previewFees(){
 // modePrint = true → setelah simpan, auto-buka PDF kwitansi
 async function submitPayment(modePrint){
   try{
-    const student_id=qs('pay-student').value;
-    const month=qs('pay-month-modal').value;
-    const method=qs('pay-method').value;
-    const selected=Array.from(document.querySelectorAll('.pay-class:checked')).map(x=>x.value);
+    const student_id = qs('pay-student').value;
+    const rawMonth   = qs('pay-month-modal').value;
+    const month      = rawMonth.length > 7 ? new Date(rawMonth).toISOString().slice(0,7) : rawMonth;
+    const method     = qs('pay-method').value;
+    const selected   = Array.from(document.querySelectorAll('.pay-class:checked')).map(x=>x.value);
+
 
     if(!student_id||!month) return alert('Pilih siswa dan bulan.');
 
