@@ -3,7 +3,7 @@
  * Versi: 2025-10 – JSONP + Cetak & Simpan Kwitansi
  * ========================================================== */
 
-const GAS_URL = 'PASTE_CURRENT_WEB_APP_URL'; // Ganti dgn URL WebApp terbaru dari Code.gs
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxvyEzH2EXVr4tQ2rcrN5qxo9KkMS9Nqz0UPkokatszxbeCZqrU18K5xhVf6ERXzmT7RA/exec'; // Ganti dgn URL WebApp terbaru dari Code.gs
 
 /* ---------- UTIL JSONP ---------- */
 function jsonp(url, params = {}) {
